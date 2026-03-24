@@ -1,0 +1,16 @@
+.env
+.env.local
+.git
+.gitignore
+.claude/
+.vscode/
+.idea/
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+client_resources/
+tests/
+*.md
+.dockerignore
+.python-version

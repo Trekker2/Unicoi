@@ -1,0 +1,53 @@
+scenarios:
+- name: Master modifies quantity triggers cancel and replace
+  description: Master changes quantity from 10 to 20. Follower order must be canceled and replaced (PUT cannot modify quantity).
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    trades:
+    - account_number: VA222222
+      trades:
+      - id: 55555
+        master_id: 10001
+        status: open
+        master_snapshot:
+          price: 150.00
+          stop: null
+          duration: day
+          type: limit
+          quantity: 10
+        copied_fields:
+          price: 150.00
+          stop: null
+          duration: day
+          type: limit
+          quantity: '10'
+  trigger:
+    master_orders:
+    - id: 10001
+      class: equity
+      symbol: AAPL
+      side: buy
+      quantity: 20
+      type: limit
+      price: 150.00
+      stop: null
+      duration: day
+      status: open
+      create_date: now
+  expect:
+    cancellations_sent: 1
+    canceled_order_ids: [55555]
+    orders_forwarded: 1

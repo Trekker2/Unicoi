@@ -1,0 +1,47 @@
+scenarios:
+- name: Order forwarded to 3 followers with different multipliers
+  description: Master buys 10 SPY. Followers have 1x, 2x, and 5x multipliers.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Wife
+      account_number: VA222222
+      api_key: follower-key-1
+      is_master: false
+    - alias: Son
+      account_number: VA333333
+      api_key: follower-key-2
+      is_master: false
+    - alias: Daughter
+      account_number: VA444444
+      api_key: follower-key-3
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+        VA333333: 2
+        VA444444: 5
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10007
+      class: equity
+      symbol: SPY
+      side: buy
+      quantity: 10
+      type: market
+      duration: day
+      status: filled
+      create_date: now
+  expect:
+    orders_forwarded: 3
+    quantities_by_account:
+      VA222222: '10'
+      VA333333: '20'
+      VA444444: '50'

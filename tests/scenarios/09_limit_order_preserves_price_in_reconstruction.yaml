@@ -1,0 +1,38 @@
+scenarios:
+- name: Limit order preserves price in reconstruction
+  description: Master places a limit buy. Price should be included in forwarded order.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10009
+      class: equity
+      symbol: AAPL
+      side: buy
+      quantity: 25
+      type: limit
+      price: 175.5
+      duration: day
+      status: pending
+      create_date: now
+  expect:
+    orders_forwarded: 1
+    forwarded_data:
+      type: limit
+      price: 175.5
+      quantity: '25'

@@ -1,0 +1,55 @@
+scenarios:
+- name: Master modifies duration day to gtc
+  description: Master changes duration from day to gtc. Follower order should be modified via PUT.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    trades:
+    - account_number: VA222222
+      trades:
+      - id: 55555
+        master_id: 10001
+        status: open
+        master_snapshot:
+          price: 150.00
+          stop: null
+          duration: day
+          type: limit
+          quantity: 10
+        copied_fields:
+          price: 150.00
+          stop: null
+          duration: day
+          type: limit
+          quantity: '10'
+  trigger:
+    master_orders:
+    - id: 10001
+      class: equity
+      symbol: AAPL
+      side: buy
+      quantity: 10
+      type: limit
+      price: 150.00
+      stop: null
+      duration: gtc
+      status: open
+      create_date: now
+  expect:
+    orders_forwarded: 0
+    modifications_sent: 1
+    modified_order_ids: [55555]
+    modified_data:
+      duration: gtc

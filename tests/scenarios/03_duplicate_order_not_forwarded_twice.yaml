@@ -1,0 +1,37 @@
+scenarios:
+- name: Duplicate order not forwarded twice
+  description: Same master order appears in two consecutive polls. Should only be
+    forwarded once.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      multipliers:
+        VA222222: 1
+    history:
+    - account_number: VA111111
+      history:
+      - id: 10003
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10003
+      class: equity
+      symbol: AAPL
+      side: buy
+      quantity: 50
+      type: market
+      duration: day
+      status: filled
+      create_date: now
+  expect:
+    orders_forwarded: 0
+    reason: Order ID 10003 already in master history

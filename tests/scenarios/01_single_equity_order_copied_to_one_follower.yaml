@@ -1,0 +1,45 @@
+scenarios:
+- name: Single equity order copied to one follower
+  description: Master places a market buy for SPY. Should be detected, reconstructed,
+    and forwarded to follower.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      poll_interval: 2
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10001
+      class: equity
+      symbol: SPY
+      side: buy
+      quantity: 100
+      type: market
+      duration: day
+      status: filled
+      create_date: now
+  expect:
+    orders_forwarded: 1
+    forwarded_to:
+    - VA222222
+    forwarded_data:
+      class: equity
+      symbol: SPY
+      side: buy
+      quantity: '100'
+      type: market
+    history_stored: true
+    trade_stored: true

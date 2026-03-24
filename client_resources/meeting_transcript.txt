@@ -1,0 +1,831 @@
+Tyler Potts
+13:30:34
+Hello, Joe.
+Are you there, Jill?
+Looks like it says you're connecting to audio.
+1678****642
+13:32:06
+Hey, can you hear me?
+Tyler Potts
+13:32:08
+Hey, yes, I can hear you. You on your phone now?
+1678****642
+13:32:10
+Okay. Yeah, sorry, I don't… I don't have…
+Wayne, are you still there?
+Tyler Potts
+13:32:16
+Yeah, I'm here.
+1678****642
+13:32:18
+Okay, yeah, I don't have a microphone or camera on this computer, I forgot, and…
+Tyler Potts
+13:32:22
+That's… fine.
+1678****642
+13:32:24
+And now I'm sitting here without a… so I had to call in, but um…
+Tyler Potts
+13:32:29
+Okay, that's fine.
+1678****642
+13:32:30
+You don't have to be on camera, I don't care one way or the other, it's up to you. Um…
+Tyler Potts
+13:32:32
+Alright, alright, that's fine.
+1678****642
+13:32:35
+So, anyway, um…
+what I'm trying to do… so, uh, I've been doing trading a lot, day trading.
+And, you know, it works out sometimes, sometimes it doesn't. And…
+Tyler Potts
+13:32:44
+Yeah.
+Sure.
+1678****642
+13:32:49
+Um, you buy, like…
+So you'll do it on your own, you know, you can break even, lose money, whatever, or you'll do it where you can.
+You know, buy a service from somebody, and uh… they can feed you trades, and then you make the trades.
+Tyler Potts
+13:33:06
+Yeah.
+1678****642
+13:33:06
+And it works out, sometimes it doesn't. I don't know if you've had any kind of similar experience or not.
+Tyler Potts
+13:33:13
+Oh, yeah, sure, I have dealt with many clients over the years, and yeah, a lot of them have had that experience, yes.
+1678****642
+13:33:19
+Yeah. So, the one I'm doing now is a, um…
+It's automated, it's bots that trade as certain things, you know, certain things trigger.
+Tyler Potts
+13:33:30
+Okay.
+Yeah.
+1678****642
+13:33:32
+And that's… that's worked out a lot better with the credit spreads and everything. So, I'm trying to figure out a way to, uh…
+I get their trade, it comes in, and then it copies to other accounts within mine.
+Tyler Potts
+13:33:48
+Right.
+1678****642
+13:33:48
+And that's… and that's basically… and you… you know, that was in the presentation.
+Tyler Potts
+13:33:54
+Yeah.
+1678****642
+13:33:54
+that you responded to. Um, and it's with Tradier.
+I don't know, have you had any experience with them?
+Tyler Potts
+13:34:01
+Yeah, I've used them many times for, like, maybe a dozen jobs or so.
+1678****642
+13:34:06
+Okay, um, what kind of jobs do you do? Have you… or what kind of jobs do people ask for, usually?
+Tyler Potts
+13:34:13
+My typical jobs, well, for Tradier, for just all my jobs, really?
+1678****642
+13:34:19
+I like the ones for Tradier.
+Tyler Potts
+13:34:21
+Oh, those would typically be option systems, because people like, um, them…
+having the good options, commissions, the low… commission-free, you pay, like, $10 a month or something for the account. So, yeah, people who are attracted to high-volume option trading go there.
+Um… not as much equities, but it looks… sounded like you were trying to trade equities, although I did see you mention some SPX, NDX, and I know you can't trade indexes, so I wonder, I was going to clarify that point.
+Um, are you… what are you trying to… asset classes, what are you trying to trade?
+1678****642
+13:34:51
+Um…
+So those are options on the indexes.
+Tyler Potts
+13:34:57
+Okay, so you are doing… you're doing… so you're doing index options and equities?
+1678****642
+13:35:03
+Yeah, and it's mostly the index options, because the trades that they put through are typically those, because when they.
+Tyler Potts
+13:35:04
+Okay.
+Yeah.
+1678****642
+13:35:11
+When you do a credit spread, you know, you put it on at 10.30 or so in the morning, and it's… you get a credit of, say, $150 or something.
+and then by the end of the day, it trickles down to zero. Okay, and like with just normal equities, you have to sell it at that point.
+Tyler Potts
+13:35:22
+Right, yeah.
+Yeah.
+1678****642
+13:35:28
+Um, but if it trickles down to… or, I'm sorry, a normal option, you have to sell at that point.
+or, you know, or buy it back, or whatever. But with that, you don't have to buy it back, and they don't buy it back just because there's another fee involved.
+And, um, it avoids a pattern day trader rule and things like that. So that's why they trade NDX and SPX.
+Tyler Potts
+13:35:46
+Yeah.
+Yeah, okay, that makes sense.
+Oh, by the way, since you mentioned that, are you aware that the pattern day trading rule might be going away in about a month or so?
+1678****642
+13:35:58
+Um, I heard something about it, like, the last fall, but I haven't heard anything recently.
+Tyler Potts
+13:36:03
+Yeah, so I'll just mention… so, it was… FINRA has formally sent a request.
+1678****642
+13:36:03
+That'd be exciting.
+Tyler Potts
+13:36:10
+to do some margin reform. It's been sent to the SEC, it's sitting on their desk, it doesn't go into effect until it's approved, but…
+the rumor is that it's going to be approved. Um, I… so not yet, but once that happens, then…
+1678****642
+13:36:20
+Yeah.
+Tyler Potts
+13:36:26
+uh, 25K requirement might be a thing of the past, which will be good for a lot of smaller traders. So, it's gonna be up to the broker to define their own.
+Uh, risk measures…
+Um… yeah. Yeah.
+1678****642
+13:36:38
+Right, I read that. I just didn't know when it was going to happen. I thought it would happen by the end of the year, but that didn't happen.
+Tyler Potts
+13:36:42
+Rumor is April. Rumor's April. Uh, again, I say rumor because these things get delayed sometimes, you never know, but anyway, yeah, so that might simplify your trading in that case, so…
+1678****642
+13:36:46
+Oh, okay.
+Yeah, yeah.
+Yeah, yeah, for sure. Well, it'll help… it'll…
+I'm trying to think how they would react to that. They would probably do more trades per day.
+Tyler Potts
+13:37:03
+Yeah, probably, yeah, makes sense.
+1678****642
+13:37:04
+I would think, which would be good, you know. But, um, okay.
+Tyler Potts
+13:37:07
+Or then you could also then close… you could also close out positions. I know some people, they let the positions expire, because then that avoids a day trade, you know?
+1678****642
+13:37:14
+Uh-huh. Yeah, exactly. But some of these commissions are, you know.
+Tyler Potts
+13:37:17
+Yeah.
+1678****642
+13:37:20
+If you're only making $150 a day on a $5,000 account, then some of the commissions would be like $70, $80.
+I noticed, and I'm like, wow, that wipes out half your profit. But, I mean, every situation's different, you know.
+Tyler Potts
+13:37:27
+Oh, yeah, yeah.
+Yeah. Or are these, like, four-legged trades or something?
+1678****642
+13:37:35
+Um, it was just one I tested it on. It could have been, like, a straddle or something, I can't remember, but I just went in and said, if I were to close this.
+Tyler Potts
+13:37:43
+Yeah.
+1678****642
+13:37:46
+what's the process? And I clicked on the buttons, and then it said there was a $70 fee. I'm like, whoa. You know, I didn't need to close it, so I didn't do it, but uh…
+Tyler Potts
+13:37:52
+Oh, okay.
+Yeah.
+1678****642
+13:37:55
+Yeah, I just noticed that. Um…
+So, let me think. What do we need to talk about?
+Um, so with Tradier, um…
+Tyler Potts
+13:38:04
+Also, you just…
+Yep.
+1678****642
+13:38:09
+So, the code is housed on my server.
+which I'd have to get…
+And then…
+Tyler Potts
+13:38:16
+Uh… yeah, I'm gonna… the code will be hosted in your name.
+1678****642
+13:38:19
+Can you walk me through that?
+Tyler Potts
+13:38:22
+I'll have you make what's called a GitHub account, and then there, you'll add me… I'm gonna send instructions for this, assuming you hire me for a follow-on job, but then I'd have you making a… just an account, you just have to sign up with, like, username, that sort of thing, and then you'll add me as a collaborator, and then I'll…
+I can upload, manage all the code from there, but I do that just to make sure it's in your name, you know, you don't really want it in my name, because that kind of creates ownership issues, and then access issues, if a…
+1678****642
+13:38:46
+Right.
+Tyler Potts
+13:38:49
+Um, you ever want to bring on someone else, or if I, you know, something happens to me, you know, so…
+1678****642
+13:38:55
+Yeah. Um…
+Tyler Potts
+13:38:56
+Yeah, so it'll be there, and then you can connect it to any sort of…
+cloud hosting platform from there, once it's on GitHub. All the major cloud platforms have integrations with them that make it easy to deploy from that point, so…
+1678****642
+13:39:11
+Okay. Have you looked at, um…
+Tyler Potts
+13:39:11
+Yeah.
+1678****642
+13:39:14
+Trade here. Let me see if I can find that file. So, I asked them…
+Tyler Potts
+13:39:17
+Yeah, I've… yeah, I have a… I've used Trader many times. I have my own account… I have a Trader account myself that I trade with.
+1678****642
+13:39:24
+Okay, so when I asked tech support, I said, what do I need to do to get this done? They said, you want to use.
+They get orders, um, API, and then they gave me a link to it.
+and uh… I was just kind of reading through that. Um…
+Tyler Potts
+13:39:36
+Yep. Yep.
+Yeah, that… yeah, on the master account, we're gonna get… constantly monitor the master account's orders by using, yeah, get orders.
+And then we will take that data, reconstruct it so it's a new order, and then forward that to every subscriber account that you have.
+1678****642
+13:39:57
+Okay. And does it matter if the accounts are not in my name, like in my wife's name or something?
+Tyler Potts
+13:40:02
+Um… uh…
+It doesn't matter whose name they're in, but you need the credentials to access them. It's like the API key, the secret key.
+1678****642
+13:40:11
+Okay.
+Tyler Potts
+13:40:13
+Uh, yeah. You have to have that, or else it's not gonna go through.
+1678****642
+13:40:14
+Yeah, I'll have that. And I asked… I asked…
+Yeah, I asked tech support, and they said I can get authorization to trade on her account. I just have to have some written form, which wouldn't be a problem.
+Tyler Potts
+13:40:25
+Yeah. Uh…
+1678****642
+13:40:26
+Because…
+Tyler Potts
+13:40:27
+Yeah, so about, like, legal agreements, there's probably some legal implications about this sort of trading that I can't advise on, because I'm not a lawyer. Um, but what I can tell you, just from a software perspective, you can forward the trade to as many accounts as you have.
+1678****642
+13:40:37
+Yeah.
+Tyler Potts
+13:40:42
+the credentials for, whether they're in your name or not. So, I'm not saying necessarily you should do that, but, you know, it's up… but that's what you can do.
+1678****642
+13:40:45
+Okay.
+Okay.
+Yeah. Yeah, it's just… it's just her mind, that's it. But the thing is, so here's another question.
+Tyler Potts
+13:40:51
+Yeah.
+Yeah, okay.
+1678****642
+13:40:59
+So, I'm paying for the service, and they're sending me trades, and they're linked to my account.
+So I gave them access, so the trades automatically go through up to, like, $5,000, okay?
+Tyler Potts
+13:41:05
+Okay.
+Yeah.
+Yeah.
+1678****642
+13:41:12
+So they say, we'll trade up to $5,000.
+and then the trades go through, and they've worked great. I've been doing it for a month and a half, and they haven't lost a single day.
+And, um… and…
+But I can only do up to $5,000. So as the account grows, you know, 5, 10, 15.
+then, um, it doesn't… that extra money is not applied, okay? They only do one contract.
+And if I want to do another contract, then I got to pay another $150 a month.
+Tyler Potts
+13:41:42
+Hmm.
+1678****642
+13:41:43
+Does that make sense? So, if I want $10,000 that they're using, then I got to pay.
+Tyler Potts
+13:41:45
+Yeah.
+1678****642
+13:41:49
+extra, and then $25,000, I gotta pay 5 times as much.
+Tyler Potts
+13:41:53
+Hmm.
+1678****642
+13:41:53
+And that's kind of…
+kind of what I'm trying to avoid.
+Tyler Potts
+13:41:58
+Right.
+1678****642
+13:41:59
+So, I don't know if you see any issues with that, with the trades coming in from somebody else.
+And then…
+You're copying it to other accounts.
+Tyler Potts
+13:42:11
+No, I don't think there should be issues there.
+1678****642
+13:42:15
+Okay. It doesn't really matter where they come from, I guess.
+Tyler Potts
+13:42:18
+Not… as long as you have access to credentials for that account where they're coming from, then it's…
+Yeah, it's fine.
+1678****642
+13:42:25
+Yeah, yeah, for sure, for sure. Okay.
+Tyler Potts
+13:42:27
+Yes.
+1678****642
+13:42:29
+Alright, um…
+Let's see, what other… what other things do we need to cover?
+Um, do you know about how long it would take or what it would cost?
+Tyler Potts
+13:42:46
+Um, yeah, for a trade copier, prob… maybe, like, 2 weeks or so.
+Um… for cost, my average job tends to run around $3,000. I bet…
+I feel like if… I feel like this could probably be less below that, because…
+Not monitor… not monitoring market data, not…
+Trying to calculate indicators…
+So, you want to probably come in below average.
+1678****642
+13:43:14
+Right, it's none of that stuff.
+Tyler Potts
+13:43:19
+Um… how many accounts is it again? That you're trying to forward to?
+1678****642
+13:43:25
+Um, like, up to 6.
+Tyler Potts
+13:43:27
+Up to say… okay, then that's… yeah, that's… if it was, like, hundreds, then I'd have to, like, build out extra infrastructure to make sure it can…
+that it'll all be quickly forwarded. Um, that's… that's very reasonable.
+Um… I… off the top of my head, I'm guessing this is gonna come somewhere around, like, 2,000 or something, but I'd have to…
+1678****642
+13:43:41
+Does it matter whether it's 6 or 8?
+Okay.
+Tyler Potts
+13:43:48
+do another formal estimate that I've sent to you.
+Um, yeah.
+1678****642
+13:43:52
+Yeah, that's fine. Okay. Um…
+What about…
+As I said, one of the complex pieces was the multi-leg and the orders going through as one order and not separate orders.
+So that you do not trigger half of it and leave the other half sitting out there.
+Tyler Potts
+13:44:16
+Yeah, um…
+Okay, so… are you talking about multi-leg orders? Like, you don't want just one leg executed, or…
+1678****642
+13:44:25
+Yeah, exactly. So, all those have to go through a single order. So, if it's…
+Tyler Potts
+13:44:29
+Yeah, yeah, yes, and that's how they're structured, so…
+Yeah, it's almost impossible for the bot to break those apart, because, yeah, when it queries the get orders endpoint, it shows them all.
+Um, together. So…
+1678****642
+13:44:46
+Okay.
+Tyler Potts
+13:44:47
+Yeah, it's… it's… it would… it would not try to break up the legs, yeah.
+1678****642
+13:44:49
+Yes.
+Okay, because that's… I mean, just that would be pretty… that could be pretty devastating if it is.
+Tyler Potts
+13:44:58
+Yeah.
+1678****642
+13:44:59
+If one triggered and the other didn't, and then you're not covered on the other side, that moves in that direction.
+Tyler Potts
+13:45:02
+Yeah.
+Yeah, no.
+1678****642
+13:45:05
+Um, let me see what else did it have on here?
+Tyler Potts
+13:45:12
+And it requires you to do that, you know, because…
+a lot of margin requirements, you know, you can't just, like, a lot of accounts can't just sell naked options, they're margin required for that. So, even if we tried, you'd probably just get denied.
+1678****642
+13:45:22
+Right, you just can't… yeah.
+Tyler Potts
+13:45:27
+The trade would get denied, so…
+1678****642
+13:45:27
+Yeah, it would get rejected if you're trying to sell just.
+Tyler Potts
+13:45:29
+something that was, yeah, if the bot tried… even if it tried to do something extremely high risk, I bet it would get denied, so there's that extra layer of security if you're worried about that, so…
+1678****642
+13:45:38
+Yeah, yeah, that's true, I didn't think about that.
+Tyler Potts
+13:45:41
+Yeah.
+1678****642
+13:45:41
+Um, duplicate trades…
+is sometimes an issue with this, where it reads it once, tries it, and then goes back and reads the same thing, and then… is there something you can… I mean, is there…
+Tyler Potts
+13:45:46
+Yep, yeah.
+1678****642
+13:45:54
+What do you do about that?
+Tyler Potts
+13:45:54
+Yeah, we're… yeah, we have a data… we're gonna be using a database each time.
+an order ID is processed, we're going to mark down which one that was. It's in the database, so… and then we're constantly going to be checking against that.
+To ensure that we're not sending the same order more than once.
+Um… yeah, it's… it'll be updated.
+1678****642
+13:46:15
+Okay.
+And then how does it… does it look like via webhook or something else?
+Tyler Potts
+13:46:23
+Uh, there's no webhooks at play, it's just querying the API.
+uh, HTTP endpoint, or… trying not to use too much technical jargon here, but…
+It's just going to be monitoring that constantly, and whenever some new information appears, a new order, it's going to.
+Notice that, and just begin constructing the new orders and forward them out.
+1678****642
+13:46:48
+Okay, and it just does it during market hours, I guess.
+Tyler Potts
+13:46:51
+Yeah, yeah. I mean, it would… yeah, even if it was running 24-7, though, there's not gonna be any new orders happening after hours, so…
+1678****642
+13:46:53
+Okay.
+Yeah, right.
+Tyler Potts
+13:47:00
+And when it's my battery.
+Yeah.
+1678****642
+13:47:02
+Okay, because there was… I was reading something about…
+There could be a lag. I don't think it'll really matter, but, you know, like.
+Tyler Potts
+13:47:09
+Um, there'll be a small amount of lag between master execution and then the followers.
+Um, but not… not maybe, like, one second, not a lot, you know?
+1678****642
+13:47:21
+Yeah. Okay. Um…
+Tyler Potts
+13:47:23
+Yeah, oh, one thing that might… okay, so one complication I could think of is if…
+Um, does… if… does the follower, or the master account, does it send out an order, like, one second before the market closes? You know, if it does that, then that could potentially be, like, an issue, because then the followers might not get it in time, you know?
+1678****642
+13:47:38
+No.
+No, all the orders are going to come through between 10.30 and usually, like, 12.
+And usually, it's… it's looking for… it's waiting for a time when the market's just going to go flat.
+Okay, so the market moves up or down in the morning till about 1030, and then usually it just starts.
+Tyler Potts
+13:47:58
+Okay.
+1678****642
+13:48:04
+really… the volume's done with, and it just starts slowing down, and that's the time… that's the optimal time to enter.
+Tyler Potts
+13:48:08
+Yeah.
+1678****642
+13:48:11
+When the premium's high, and just let the premium deteriorate to zero.
+Tyler Potts
+13:48:16
+Right.
+1678****642
+13:48:17
+That's the strategy, basically. Um…
+Tyler Potts
+13:48:19
+Okay.
+1678****642
+13:48:21
+So anyway, I don't think there's anything else I really have a question about. Is there anything you have for me? Or did you see the sheet I sent back?
+With that answering your questions?
+Tyler Potts
+13:48:29
+Yeah, I looked at the answers to your questions, yeah, and I wanted to clarify. Yeah, the index trading, I needed to clarify that, because I was like, okay, you can't trade indexes, so now I know you mean the options.
+Um…
+1678****642
+13:48:41
+You know, the options on the indexes, yeah. And that's going to be the primary… primarily one, NDX and SPX.
+Tyler Potts
+13:48:43
+Yeah.
+Yeah, and it sounds like… I asked a few questions about market data, but it sounds like we don't even need that.
+Um… here.
+1678****642
+13:48:55
+No, I don't think we do.
+Tyler Potts
+13:48:57
+Yeah. Um…
+Now, about the order modifications, so you said there's none, but… so, is there ever a case where the master is going to cancel an order that it sends, or…
+or I guess if it's using limit orders, adjust the price. If…
+Would either of those scenarios occur? And then, obviously, we would want to copy that.
+1678****642
+13:49:20
+Um…
+Yeah, so…
+Here's… okay, one situation's happened. So, one time in order, he put an order through.
+Tyler Potts
+13:49:32
+Okay.
+1678****642
+13:49:35
+And it didn't fill. Price moved, you know, as the order went through. And it sat out there.
+Tyler Potts
+13:49:39
+Okay.
+1678****642
+13:49:41
+it's set out there until, like, 3 o'clock, you know, and I'm like…
+Tyler Potts
+13:49:44
+Okay.
+1678****642
+13:49:46
+what do I do? You know, because I don't want it to trigger now, and then I have to pay a fee.
+Tyler Potts
+13:49:50
+Yeah.
+1678****642
+13:49:52
+And then I don't make the premium back. So, um…
+Tyler Potts
+13:49:52
+Yeah.
+Right.
+1678****642
+13:49:56
+I don't remember what I did. But, I mean, that could happen. And if that could happen, then I might want to adjust price.
+Tyler Potts
+13:50:00
+Okay.
+1678****642
+13:50:04
+So it would trigger, you know what I mean?
+Tyler Potts
+13:50:07
+Yeah.
+1678****642
+13:50:09
+I don't know what to do about that scenario. Like, what if an order just sits out there and it doesn't fill?
+Tyler Potts
+13:50:11
+Hmm.
+1678****642
+13:50:14
+Do the other accounts just wait for it to fill?
+Tyler Potts
+13:50:14
+Um, well, is…
+Orders often have expirations attached to them. Is he… do you know if he's using day duration on his orders, or if he's using good till canceled, or…
+1678****642
+13:50:26
+it's probably good till end of the day. Well, I mean, they're all zeros DTE.
+Tyler Potts
+13:50:28
+Okay, end of day.
+1678****642
+13:50:32
+So, it can't go longer than the end of the day.
+Tyler Potts
+13:50:33
+Oh, then… okay, yeah, that's right, then it has to… it's done by the end of the day, it has to be.
+Um, but if you wanted to cancel even earlier than that, then I guess that's something we'd have to build out support for.
+1678****642
+13:50:40
+Yeah.
+Tyler Potts
+13:50:47
+it would track each order, how long each order has been on the market, and then cancel it after it reaches X hours and X minutes.
+1678****642
+13:50:48
+Yeah, because, I mean.
+Yeah, it's really…
+quite honestly, it's from 4 o'clock backwards how close that is. You know, if it's less than 2 hours before market close, your premium's shot anyway, and it's… it's… you're risking.
+Tyler Potts
+13:51:03
+Yeah.
+Yeah.
+1678****642
+13:51:09
+buying it, and I mean, there's very little upside in the risk of, you know, the fees and all that stuff.
+Tyler Potts
+13:51:12
+Okay, and that… that… okay, and now, you mentioned… okay, that… that's interesting. You mentioned offset from close. So, you know, sometimes the market closes early, right?
+So, um, in that case, you would want the bot to notice that as well, right?
+1678****642
+13:51:22
+Yeah.
+Yeah, I don't know that he would even do an order on those days, but I mean, yeah, that could happen.
+Tyler Potts
+13:51:33
+Okay.
+Hmm. Alright.
+Okay, um…
+Yeah, I'm curious, have you tried at all to…
+Look for, like, pre-existing trade copiers that are out there, or that's… or if you ever experimented with that sort of thing.
+Um, like, I'll put…
+1678****642
+13:51:53
+You mean for this use?
+Tyler Potts
+13:51:55
+Yeah, for basically what you're trying to do, or… there's a… like, one I'm aware of, I don't think it supports Tradier, unfortunately, so it doesn't really help you, but it's Traders Connect, have you heard of that one?
+1678****642
+13:52:06
+Um, no, I don't think so. I actually just got into this recently, so I'm not that familiar with this stuff.
+Tyler Potts
+13:52:08
+Oh, I just drove…
+Oh, really? Okay. I dropped a link in the chat… in the Upwork chat, not the Zoom chat.
+Um, you can take a look at that if you want. Um, maybe you could…
+1678****642
+13:52:17
+Okay.
+Tyler Potts
+13:52:21
+Yeah, I'll make a free account and see what you like about the software, and then give me feedback on that.
+Yeah, I'm pretty sure it doesn't support Trader, unfortunately, so yeah, I don't know if you can use them, but…
+Yeah, I mean, I don't… I can't think of one off the top of my head that has tradie, or if I did, if I could, I'd let you know.
+1678****642
+13:52:35
+Yeah.
+Tyler Potts
+13:52:42
+Um, but…
+1678****642
+13:52:42
+Yeah, I tried to find… I tried to do a bunch of them, but they were always…
+Um… the source was always wrong, you know? It was, like, linked to this professional who's going to post a trade.
+Tyler Potts
+13:52:51
+Yeah.
+1678****642
+13:52:55
+and choose from our licensed professionals. It wasn't linked to another account.
+Tyler Potts
+13:52:58
+Oh.
+I see, okay.
+1678****642
+13:53:01
+So then… so then I emailed Trader and said, can I do that, and they're like, yeah, you can do that, but we don't have it built out, you have to do it on your own.
+Tyler Potts
+13:53:09
+Hmm.
+1678****642
+13:53:09
+And then I started looking at it, and it was way over my head, so that's where I'm… that's why I called you.
+Tyler Potts
+13:53:13
+I see. Okay.
+Alright, well, yeah, I can definitely help you with this. Um…
+1678****642
+13:53:17
+Uh, let me look at Traders Connect.
+Okay, um…
+Tyler Potts
+13:53:21
+So it won't be a problem.
+1678****642
+13:53:25
+So, can you get started right away, or…
+Tyler Potts
+13:53:28
+Yep, yeah, no, I can… got time, and…
+what did I say? Probably two weeks? Well, I could probably…
+1678****642
+13:53:34
+Okay.
+Tyler Potts
+13:53:38
+Get something to you within one week, and then, like, finalized within two weeks, is my estimate.
+1678****642
+13:53:45
+Okay. Alright, yeah, let's do that then. Let's…
+Tyler Potts
+13:53:46
+Yeah. And just, uh, make sure… I'll send…
+So, I'll make an S… so I'm not sure… are you new to Upwork, by the way? Just curious.
+1678****642
+13:53:56
+No, I've done it a lot, but I haven't done it recently.
+Tyler Potts
+13:53:59
+Oh, okay.
+Okay, well, which is true. And you're probably aware that every consultation within 24 hours, I'm supposed to send out, uh, summary documents, a meeting summary and, uh, estimate.
+So I'll get that to you, and then from there, if you choose to follow on, you have the choice between hourly and fixed price contracts, and I can do either one, it doesn't matter to me. But then you'll… once you choose that, then we can get started.
+And… yeah, you just go from there, and I'll deliver the work when it's done, and I'll have… I'll send you a setup guide, I'll have you set up.
+Couple… few accounts. Uh, if you want, we could also do a walkthrough session using.
+Uh, something like any desk, if you want me to remote in. I've done that for clients before who…
+Don't really want to set things up on their own, but… so that's an option. Um, or you could read the guide, too, and that's an option.
+1678****642
+13:54:55
+Okay, alright, yeah, just, um…
+Tyler Potts
+13:54:56
+Yeah.
+1678****642
+13:54:58
+You want to just include that in the… in your paperwork?
+Tyler Potts
+13:55:01
+Yeah, yeah.
+1678****642
+13:55:03
+Okay. I don't know yet, I have to think about it and see. I mean, I don't mind you looking at my account, but uh…
+I've got a, um…
+I mean, I just don't know the process of how these things would work. And, like, knowing how it'll work and all that stuff, and how… because we didn't talk about it, but one thing is changing the sizing of the order, so the order may come in one.
+Tyler Potts
+13:55:16
+Right.
+1678****642
+13:55:25
+Or the master, but then I'm gonna up it to 3 or something.
+Tyler Potts
+13:55:25
+Right.
+Right. Okay, so you want, like, a multiplier, yeah.
+1678****642
+13:55:31
+Yeah, so I'll have to, um…
+Tyler Potts
+13:55:33
+Even for the account size. Yep.
+1678****642
+13:55:34
+So that should be built in, too, because… because as the account grows, I'm gonna expand, you know.
+Tyler Potts
+13:55:36
+Yeah, we…
+1678****642
+13:55:40
+And put… put out 5 more of them, is what my point.
+Tyler Potts
+13:55:42
+Yeah, we can do that, yep.
+1678****642
+13:55:45
+Okay. Okay, yeah, just go ahead and put it together, and then, um, hopefully you get over, you know, today, and I can approve it today.
+Tyler Potts
+13:55:53
+Okay, yeah, sounds good.
+1678****642
+13:55:56
+Okay. All right, um, let me know if you have any other questions, and good talking to you.
+Tyler Potts
+13:55:57
+Alright.
+Okay, alright, sounds good. Alright, have a good one, Joe.
+1678****642
+13:56:06
+Alright, thanks, see you later.
+Tyler Potts
+13:56:07
+Alright. Bye-bye.

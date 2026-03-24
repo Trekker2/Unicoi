@@ -1,0 +1,120 @@
+Upwork Chat History - Joe Weissinger, Bain, Inc.
+Date Range: 2026-03-10 to 2026-03-24
+Generated: 2026-03-24 11:55:12
+================================================================================
+
+[2026-03-17 21:59:31] Joe W.:
+None
+
+[2026-03-17 22:09:49] Tyler P.:
+Hello Joe. Thanks for booking a consultation. I believe l already shared some files with you in our other chat, so I won&#39;t do that again.
+
+Unfortunately, it looks like I didn&#39;t properly block out my schedule on Wednesday. After you able to do 1:30pm CST or later? If not I am available all day on Thursday. Sorry for the inconvenience.
+
+[2026-03-17 22:21:46] Joe W.:
+I'm available all afternoon tomorrow. What time works best for you?
+
+[2026-03-17 23:03:19] Joe W.:
+None
+
+[2026-03-17 23:04:31] Joe W.:
+None
+
+[2026-03-18 03:45:40] Tyler P.:
+1:30pm CST is fine. Thanks for rescheduling. I'm make sure that you don't get charged twice.
+
+[2026-03-18 18:29:33] Tyler P.:
+I'll create a meeting room now.
+
+[2026-03-18 18:29:55] Tyler P.:
+None
+
+[2026-03-18 18:31:26] Tyler P.:
+Let me know if you are having issues joining
+
+[2026-03-18 18:52:04] Tyler P.:
+<https://tradersconnect.com>
+
+[2026-03-18 19:00:02] Tyler P.:
+<https://support.upwork.com/hc/en-us/articles/211063418-How-hourly-and-fixed-price-contracts-are-different-on-Upwork>
+
+[2026-03-18 22:19:42] Joe W.:
+It did charge me for both consultations. what should I do about that?
+
+[2026-03-18 22:21:18] Tyler P.:
+The amount for the 2nd one will be refunded to you as soon as I cancel it. The 1st cannot be canceled because you already approved it.
+
+[2026-03-18 22:21:55] Tyler P.:
+
+
+[2026-03-18 22:22:18] Joe W.:
+gotcha
+
+[2026-03-18 22:22:21] Joe W.:
+np
+
+[2026-03-18 22:22:53] Tyler P.:
+None
+
+[2026-03-18 22:22:54] Tyler P.:
+None
+
+[2026-03-18 22:23:15] Tyler P.:
+
+
+[2026-03-18 22:23:38] Tyler P.:
+I will still submit an estimate within 24 hours.
+
+[2026-03-18 22:24:39] Joe W.:
+sounds good
+
+[2026-03-18 23:54:07] Tyler P.:
+See attached
+
+[2026-03-19 16:02:40] Joe W.:
+Hi Tyler, I'd like to move forward with the simple plan. Once I see how everything looks and I have a better understanding of what I need I'll add some of the other features you offer. Please let me know what is needed on my end to proceed. Thanks, Joe
+
+[2026-03-19 21:34:04] Tyler P.:
+Okay. Were you interested in hourly contract or fixed price? Did you get a chance to take a look at this link?
+
+[2026-03-19 21:34:14] Tyler P.:
+Here
+
+[2026-03-19 21:49:07] Joe W.:
+yes, I saw it. the fixed price is fine.
+
+[2026-03-19 21:56:25] Tyler P.:
+I have sent the offer. Upwork automatically launches a new chatroom when I do that. You can decide which room you want to continue using.
+
+[2026-03-19 22:11:26] Joe W.:
+we can use this one. Let me know where I need to set up accounts and approve you as a user.
+
+[2026-03-19 22:48:42] Tyler P.:
+See attached
+
+[2026-03-20 16:18:44] Joe W.:
+I plan to get this done today. It's an extremely busy day.
+
+[2026-03-20 19:14:01] Joe W.:
+Heroku won't take any of my credit cards even though I know they are good it tells me declined. I'll have to try back tomorrow. Have you ever had that happen?
+
+[2026-03-20 20:57:22] Joe W.:
+I added the cc. I was behind the VPN and it didn't like that. Everything in the setup guide is complete.
+
+[2026-03-21 01:31:37] Tyler P.:
+I received your project invites.
+
+I have not heard of any clients running into issues with Heroku billing before. Let me know if you are able to get that resolved.
+
+[2026-03-21 16:29:06] Joe W.:
+I got past that. It was because I was on the VPN so all good there.
+
+[2026-03-22 21:58:09] Tyler P.:
+I see. Glad to hear it was fixed. It's possible that you may be forced to download Salesforce Authenticator on your phone as well in order to login. Not sure if other authenticator apps will work, as Heroku is owned by Salesforce.
+
+[2026-03-22 22:33:31] Tyler P.:
+To give you an update, I have mostly built this out and will begin doing some personal testing on Monday and Tuesday. Expect a delivery later in the week, then you can do your own testing as well.
+
+[2026-03-23 19:23:17] Joe W.:
+👍
+

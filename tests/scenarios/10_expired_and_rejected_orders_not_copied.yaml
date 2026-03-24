@@ -1,0 +1,54 @@
+scenarios:
+- name: Expired and rejected orders not copied
+  description: 'Master has 3 orders: 1 filled, 1 expired, 1 rejected. Only the filled
+    one is copied.'
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10010
+      class: equity
+      symbol: MSFT
+      side: buy
+      quantity: 10
+      type: market
+      duration: day
+      status: filled
+      create_date: now
+    - id: 10011
+      class: equity
+      symbol: GOOG
+      side: buy
+      quantity: 5
+      type: market
+      duration: day
+      status: expired
+      create_date: now
+    - id: 10012
+      class: equity
+      symbol: AMZN
+      side: buy
+      quantity: 8
+      type: market
+      duration: day
+      status: rejected
+      create_date: now
+  expect:
+    orders_forwarded: 1
+    forwarded_symbols:
+    - MSFT

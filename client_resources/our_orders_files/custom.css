@@ -1,0 +1,355 @@
+/* ==============================================================================
+   Custom CSS for Tradier Copy Bot
+   Brand Color: Tradier Purple #6f42c1
+   ============================================================================== */
+
+/* ==============================================================================
+   CSS VARIABLES - Text colors that auto-update on theme toggle
+   ============================================================================== */
+
+/* Default (no data-bs-theme yet) — use dark since app defaults to dark */
+:root {
+    --text-primary: #c1c2c5;
+    --text-secondary: #909296;
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] {
+    --text-primary: #c1c2c5;
+    --text-secondary: #909296;
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="light"] {
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ==============================================================================
+   MANTINE DARK MODE OVERRIDES
+   ============================================================================== */
+
+/* Mantine inputs - dark mode */
+[data-mantine-color-scheme="dark"] .mantine-Input-input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #c1c2c5 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Mantine inputs - light mode */
+[data-mantine-color-scheme="light"] .mantine-Input-input {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+    border-color: #ced4da !important;
+}
+
+/* Mantine labels and descriptions - dark mode */
+[data-mantine-color-scheme="dark"] .mantine-InputWrapper-label {
+    color: #c1c2c5 !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-InputWrapper-description {
+    color: #909296 !important;
+}
+
+/* Mantine labels and descriptions - light mode */
+[data-mantine-color-scheme="light"] .mantine-InputWrapper-label {
+    color: #1a1a1a !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-InputWrapper-description {
+    color: #666666 !important;
+}
+
+/* Mantine switch labels - dark mode */
+[data-mantine-color-scheme="dark"] .mantine-Switch-label {
+    color: #c1c2c5 !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Switch-description {
+    color: #909296 !important;
+}
+
+/* Mantine switch labels - light mode */
+[data-mantine-color-scheme="light"] .mantine-Switch-label {
+    color: #1a1a1a !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-Switch-description {
+    color: #666666 !important;
+}
+
+/* Mantine segmented control */
+[data-mantine-color-scheme="dark"] .mantine-SegmentedControl-root {
+    background-color: #2e2e2e !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-SegmentedControl-root {
+    background-color: #e0e3eb !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-SegmentedControl-label {
+    color: #e0e0e0 !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-SegmentedControl-label {
+    color: #212529 !important;
+}
+
+.mantine-SegmentedControl-label[data-active] {
+    color: #ffffff !important;
+}
+
+/* Mantine combobox/select dropdowns (portaled) */
+[data-mantine-color-scheme="dark"] .mantine-Combobox-dropdown {
+    background-color: #2e2e2e !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Combobox-option {
+    color: #ffffff !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Combobox-option[data-combobox-selected] {
+    background-color: #6f42c1 !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-Combobox-option:hover {
+    background-color: rgba(111, 66, 193, 0.2) !important;
+}
+
+/* Scrollbars — neutral gray that works on both dark and light backgrounds */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.4);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.6);
+}
+
+/* Brand accent underline */
+.brand-underline {
+    border: 2px solid #6f42c1;
+    width: 60px;
+    margin: 10px auto 20px auto;
+}
+
+/* Navbar active link */
+.nav-link.active {
+    font-weight: 600;
+    color: white !important;
+    border-bottom: 2px solid white;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 6px 6px 0 0;
+}
+
+/* Navbar top gradient - opaque so fixed navbar doesn't show content through it */
+.navbar-top {
+    background: linear-gradient(90deg,
+        #6f42c1 0%,
+        rgba(111, 66, 193, 0.92) 50%,
+        #6f42c1 100%
+    ) !important;
+}
+
+/* Navbar nav items spacing */
+.navbar-top .navbar-nav {
+    gap: 4px;
+    align-items: center;
+}
+
+/* Navbar links white text */
+.navbar-top .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+    padding: 8px 12px !important;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.navbar-top .nav-link:hover {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Table row hover */
+.table-hover tbody tr:hover {
+    background-color: rgba(111, 66, 193, 0.08) !important;
+}
+
+/* Dark mode table text */
+body[data-bs-theme="dark"] .table {
+    color: #d1d4dc;
+}
+
+/* Branded table headers — sticky + opaque background.
+   .table-sticky class goes on the <table> (dbc.Table className prop).
+   The parent div must have overflow:auto + maxHeight for scroll context.
+   responsive=False on dbc.Table is required (responsive wraps in div that breaks sticky).
+   bordered=False recommended (table-bordered can interfere with sticky borders). */
+.table-sticky thead th {
+    background-color: #6f42c1 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 0.875rem 1rem;
+    border: none !important;
+    white-space: nowrap;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+/* Fallback for tables without .table-sticky class */
+.table thead th {
+    color: white !important;
+}
+
+/* Button hover effect */
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Card hover effect */
+.card:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* Mantine input focus glow */
+.mantine-Input-input:focus {
+    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.2) !important;
+    border-color: #6f42c1 !important;
+}
+
+/* Badge styling */
+.mantine-Badge-root {
+    text-transform: none !important;
+}
+
+/* Fix for dark mode select dropdowns */
+.mantine-Select-dropdown {
+    z-index: 10000 !important;
+}
+
+/* Responsive navbar */
+@media (max-width: 768px) {
+    .navbar-nav {
+        gap: 4px;
+    }
+}
+
+/* Smooth page transitions */
+#page-content {
+    transition: opacity 0.15s ease;
+}
+
+/* Custom alert positioning */
+.mantine-Alert-root {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==============================================================================
+   MODERN TABLES — rounded corners
+   ============================================================================== */
+
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.table thead th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 12px;
+}
+
+.table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 12px;
+}
+
+/* Table row text colors for dark/light mode */
+[data-bs-theme="dark"] .table td {
+    color: var(--text-primary);
+}
+
+[data-bs-theme="light"] .table td {
+    color: var(--text-primary);
+}
+
+/* Alternating row shading — apply to td, not tr, with !important to override Bootstrap */
+[data-bs-theme="dark"] .table tbody tr:nth-of-type(odd) td {
+    background-color: #2e2e2e !important;
+}
+
+[data-bs-theme="dark"] .table tbody tr:nth-of-type(even) td {
+    background-color: #252525 !important;
+}
+
+[data-bs-theme="light"] .table tbody tr:nth-of-type(odd) td {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] .table tbody tr:nth-of-type(even) td {
+    background-color: #ffffff !important;
+}
+
+/* Hover with brand tint */
+.table tbody tr:hover td {
+    background-color: rgba(111, 66, 193, 0.08) !important;
+}
+
+/* ==============================================================================
+   FOOTER
+   ============================================================================== */
+
+/* Brand-colored links */
+.brand-link {
+    color: #6f42c1 !important;
+    text-decoration: none;
+}
+.brand-link:hover {
+    color: #8b5cf6 !important;
+    text-decoration: underline;
+}
+
+/* Brand-colored border top */
+.brand-border-top {
+    border: none !important;
+    border-top: 2px solid #6f42c1 !important;
+}
+
+/* Consistent spacing between last page content and footer */
+.page-footer-spacer {
+    height: 60px;
+}

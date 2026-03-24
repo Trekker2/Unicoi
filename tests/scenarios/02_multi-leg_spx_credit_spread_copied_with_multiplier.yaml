@@ -1,0 +1,47 @@
+scenarios:
+- name: Multi-leg SPX credit spread copied with multiplier
+  description: Master places a 2-leg SPX credit spread. Follower has 3x multiplier.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      poll_interval: 2
+      stale_timeout: 5
+      multipliers:
+        VA222222: 3
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10002
+      class: multileg
+      symbol: SPX
+      duration: day
+      type: credit
+      status: filled
+      create_date: now
+      leg:
+      - option_symbol: SPX250321C05000000
+        side: sell_to_open
+        quantity: 1
+      - option_symbol: SPX250321C05050000
+        side: buy_to_open
+        quantity: 1
+  expect:
+    orders_forwarded: 1
+    forwarded_data:
+      class: multileg
+      symbol: SPX
+      type: market
+      quantity[0]: '3'
+      quantity[1]: '3'
+      side[0]: sell_to_open
+      side[1]: buy_to_open

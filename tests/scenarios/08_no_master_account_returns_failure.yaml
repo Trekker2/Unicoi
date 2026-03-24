@@ -1,0 +1,12 @@
+scenarios:
+- name: No master account returns failure
+  description: Copy cycle should return False when no master is configured.
+  setup:
+    accounts: []
+    settings:
+      use_automation: true
+  trigger:
+    master_orders: []
+  expect:
+    cycle_result: false
+    reason: No master account

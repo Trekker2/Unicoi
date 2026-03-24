@@ -1,0 +1,35 @@
+scenarios:
+- name: Stale order not forwarded
+  description: Master order is 10 minutes old. Stale timeout is 5 minutes. Should
+    be skipped.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      stale_timeout: 5
+      multipliers:
+        VA222222: 1
+    history: []
+    trades: []
+  trigger:
+    master_orders:
+    - id: 10004
+      class: equity
+      symbol: QQQ
+      side: buy
+      quantity: 20
+      type: market
+      duration: day
+      status: filled
+      create_date: 10_minutes_ago
+  expect:
+    orders_forwarded: 0
+    reason: Order is older than stale timeout

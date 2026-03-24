@@ -1,0 +1,31 @@
+scenarios:
+- name: Canceled master order cancels follower order
+  description: Master cancels an order. The matching follower order should be canceled.
+  setup:
+    accounts:
+    - alias: Master
+      account_number: VA111111
+      api_key: master-key
+      is_master: true
+    - alias: Follower1
+      account_number: VA222222
+      api_key: follower-key
+      is_master: false
+    settings:
+      use_automation: true
+      multipliers:
+        VA222222: 1
+    trades:
+    - account_number: VA222222
+      trades:
+      - id: 55555
+        master_id: 10006
+        status: open
+  trigger:
+    master_orders:
+    - id: 10006
+      status: canceled
+  expect:
+    cancellations_sent: 1
+    canceled_order_ids:
+    - 55555
