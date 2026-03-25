@@ -1,9 +1,0 @@
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Updating header color")
-    const headerId = "{'type': 'table_header', '_id': 'activity'}";
-    const header = document.querySelector(`[id="${headerId}"]`);
-    if (header) {
-        header.style.backgroundColor = '#fd7e14';  // Set orange background color
-    }
-    console.log("Header color updated")
-});

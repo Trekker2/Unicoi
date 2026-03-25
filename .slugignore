@@ -1,0 +1,12 @@
+*.md
+*.txt
+!requirements.txt
+!runtime.txt
+tests/
+client_resources/
+.claude/
+*.xlsx
+*.docx
+*.pdf
+*.png
+*.jpg
