@@ -216,10 +216,10 @@ def register_app_callbacks(app):
         if not alias or not account_number or not api_key:
             return create_error_alert("All fields are required"), no_update
 
-        success, message = do_post_account(alias, account_number, api_key)
+        username = current_user.username if current_user.is_authenticated else ""
+        success, message = do_post_account(alias, account_number, api_key, username=username)
         if success:
             db = connect_mongo()
-            username = current_user.username if current_user.is_authenticated else ""
             print_store(db, username, f"Info: [{username}] Added account '{alias}' ({account_number})")
             return create_success_alert(message), "/accounts"
         return create_error_alert(message), no_update

@@ -30,7 +30,7 @@ def do_get_accounts():
     return accounts
 
 
-def do_post_account(alias, account_number, api_key):
+def do_post_account(alias, account_number, api_key, username=""):
     """
     Add a new trading account after validating credentials.
 
@@ -38,6 +38,7 @@ def do_post_account(alias, account_number, api_key):
         alias: Display name for the account
         account_number: Tradier account number
         api_key: Tradier API key
+        username: App user who owns this account
 
     Returns:
         tuple: (success: bool, message: str)
@@ -67,15 +68,21 @@ def do_post_account(alias, account_number, api_key):
     if account_number not in valid_numbers:
         return False, f"Account {account_number} not found under this API key"
 
+    # Auto-set first account as master
+    existing_count = db.get_collection("accounts").count_documents({})
+    is_master = existing_count == 0
+
     # Insert account
     account = serialize_for_mongo({
         "alias": alias,
         "account_number": account_number,
         "api_key": api_key,
-        "is_master": False,
+        "username": username,
+        "is_master": is_master,
     })
     db.get_collection("accounts").insert_one(account)
-    return True, f"Account {alias} ({account_number}) added successfully"
+    master_note = " (set as master)" if is_master else ""
+    return True, f"Account {alias} ({account_number}) added successfully{master_note}"
 
 
 def do_delete_account(account_number):
