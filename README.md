@@ -1176,6 +1176,7 @@ Displays live orders from the Tradier API across all connected accounts. Uses a 
 **Table Columns:**
 | Column | Description |
 |--------|-------------|
+| Account | Account alias and number for the order |
 | Symbol | Underlying symbol (e.g., AAPL, SPY) |
 | Class | Order class: `equity`, `option`, or `multileg` |
 | Side | Order side: `buy`, `sell`, `buy_to_open`, `sell_to_close`, etc. |
@@ -1187,6 +1188,9 @@ Displays live orders from the Tradier API across all connected accounts. Uses a 
 
 **Features:**
 - Skeleton loading for instant page render before API calls complete
+- Account column on each row identifying which account the order belongs to
+- Timestamps converted to US/Eastern timezone for display
+- Export CSV button to download the full orders table
 - Per-account sections with master badge (⭐) indicator
 - Color-coded status badges (green/blue/red/gray)
 - Cancel button only shown for open orders
@@ -1215,8 +1219,8 @@ Displays live positions from the Tradier API across all connected accounts. Uses
 |  +--------------------------------------------------------------+|
 |  | Symbol    | Qty  | Cost Basis | Date       | Action          ||
 |  |-----------|------|------------|------------|-----------------|  |
-|  | AAPL      | 100  | $15,230.00 | 2026-03-01 | [❌ Close]     ||
-|  | SPY261218 | -5   | $3,400.00  | 2026-03-10 | [❌ Close]     ||
+|  | AAPL      | 100  | $15,230.00 | 2026-03-01 |                ||
+|  | SPY261218 | -5   | $3,400.00  | 2026-03-10 |                ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
 |  [Account 2: Follower Account (VA442...)]                        |
@@ -1224,7 +1228,6 @@ Displays live positions from the Tradier API across all connected accounts. Uses
 |  | Symbol | Qty | Cost Basis | Date                              ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
-|  (Close Position Confirmation Modal)                             |
 +------------------------------------------------------------------+
 ```
 
@@ -1235,17 +1238,11 @@ Displays live positions from the Tradier API across all connected accounts. Uses
 | Qty | Position quantity (negative = short) |
 | Cost Basis | Total cost basis for the position |
 | Date | Date the position was acquired |
-| Action | Close button with confirmation modal |
 
 **Features:**
+- Read-only view (Close button has been removed)
 - Skeleton loading for instant page render before API calls complete
 - Per-account sections with master badge (⭐) indicator
-- Auto-detects appropriate close side based on position:
-  - Long equity → `sell`
-  - Short equity → `buy_to_cover`
-  - Long option → `sell_to_close`
-  - Short option → `buy_to_close`
-- Close position with modal confirmation dialog
 - Supports equity and option position symbols
 
 </div>
@@ -1493,7 +1490,7 @@ The system uses a dual-output logging pattern: every important event is printed 
 ```python
 {
     "datetime": "2026-03-20 09:01:23",  # US/Eastern timezone
-    "log": "Info: Follower 'Bob': order placed — id=67890, status=pending, master_order=12345"
+    "log": "Info: Follower 'Follower 1': order placed — id=67890, status=pending, master_order=12345"
 }
 ```
 
@@ -1513,13 +1510,13 @@ The system uses a dual-output logging pattern: every important event is printed 
 **Example Log Messages:**
 ```
 Info: Master: new order detected — BUY 10 AAPL (market), id=12345, copying to 2 follower(s)
-Info: Follower 'Bob': order placed — id=67890, status=pending, master_order=12345
-Info: Follower 'Bob': trade stored for master order 12345
-Warning: Follower 'Sue': skipping order 12345, 7.3 min old > 5 min timeout
-Error: Follower 'Bob': order failed for master order 12345, result=Error
-Info: Follower 'Bob': canceling order 67890 (master 12345 was canceled)
-Info: Follower 'Bob': modifying order 67890 (master 12345 changed ['price'])
-Info: Follower 'Bob': cancel+replace order 67890 (master 12345 quantity changed)
+Info: Follower 'Follower 1': order placed — id=67890, status=pending, master_order=12345
+Info: Follower 'Follower 1': trade stored for master order 12345
+Warning: Follower 'Follower 2': skipping order 12345, 7.3 min old > 5 min timeout
+Error: Follower 'Follower 1': order failed for master order 12345, result=Error
+Info: Follower 'Follower 1': canceling order 67890 (master 12345 was canceled)
+Info: Follower 'Follower 1': modifying order 67890 (master 12345 changed ['price'])
+Info: Follower 'Follower 1': cancel+replace order 67890 (master 12345 quantity changed)
 ```
 
 **Retention:**
