@@ -29,10 +29,8 @@ env/
 .DS_Store
 Thumbs.db
 
-# Client resources (large files)
-client_resources/*.docx
-client_resources/*.pdf
-client_resources/*.xlsx
+# Client resources
+client_resources/
 
 # Claude
 .claude/
