@@ -38,7 +38,7 @@ The Tradier Copy Bot is an automated trade replication system built with Python 
 - 🌙 **Dark/Light Mode** - Tradier purple-themed dashboard with dark/light toggle via MantineProvider
 - 📋 **Activity Logging** - All operations logged with Info/Warning/Error prefixes, Master/Follower labels, and CSV export
 - 🔒 **Authentication** - Flask-Login with bcrypt password hashing and session management
-- 🧪 **240+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
+- 🧪 **165+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
 
 ---
 
@@ -317,7 +317,7 @@ tradier-copy-bot/
 │   ├── __init__.py                    # Cron module exports
 │   └── cron_daily.py                  # Daily cleanup (logs, history, orphans, indexes)
 ├── 📦 client_resources/               # Client-facing documents and resources
-└── 🧪 tests/                          # Comprehensive test suite (240+ tests)
+└── 🧪 tests/                          # Comprehensive test suite (165+ tests)
     ├── __init__.py                    # Test module initialization
     ├── run_all_tests.py               # Master test runner (unit + scenarios + live)
     ├── scenario_runner.py             # YAML-based integration scenario runner
@@ -1057,7 +1057,7 @@ Manages connected Tradier brokerage accounts. Users can view all linked accounts
 |  | Alias | Account # | API Key (masked) | Master ◉ | Delete 🗑 ||
 |  |-------|-----------|------------------|----------|------------||
 |  | Joe   | VA231...  | 9i7X***          |  [on]    |   [x]     ||
-|  | Bob   | VA442...  | kR4z***          |  [off]   |   [x]     ||
+|  | Fllwr | VA442...  | kR4z***          |  [off]   |   [x]     ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
 |  [Add Account Card]                                              |
@@ -1164,7 +1164,7 @@ Displays live orders from the Tradier API across all connected accounts. Uses a 
 |  |        |        |      |     |         |      |  [Cancel]   ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
-|  [Account 2: Bob's Account (VA442...)]                           |
+|  [Account 2: Follower Account (VA442...)]                        |
 |  +--------------------------------------------------------------+|
 |  | Symbol | Class  | Side | Qty | Status  | Type | Price | ... ||
 |  +--------------------------------------------------------------+|
@@ -1219,9 +1219,9 @@ Displays live positions from the Tradier API across all connected accounts. Uses
 |  | SPY261218 | -5   | $3,400.00  | 2026-03-10 | [❌ Close]     ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
-|  [Account 2: Bob's Account (VA442...)]                           |
+|  [Account 2: Follower Account (VA442...)]                        |
 |  +--------------------------------------------------------------+|
-|  | Symbol | Qty | Cost Basis | Date | Action                    ||
+|  | Symbol | Qty | Cost Basis | Date                              ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
 |  (Close Position Confirmation Modal)                             |
@@ -1275,7 +1275,7 @@ Provides controls for the copy engine, per-account trade multipliers, and displa
 |                                                                  |
 |  [Per-Account Multipliers Card]                                  |
 |  +--------------------------------------------------------------+|
-|  | Bob's Account (VA442...)       [__1.00__]                    ||
+|  | Follower 1 (VA442...)           [__1.00__]                    ||
 |  | Sue's Account (VA553...)       [__0.50__]                    ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
@@ -1341,7 +1341,7 @@ Multipliers allow each follower account to receive scaled quantities:
 
 ```python
 multipliers = {
-    "VA442...": 2.0,    # Bob gets 2x master quantity
+    "VA442...": 2.0,    # Follower 1 gets 2x master quantity
     "VA553...": 0.5,    # Sue gets 0.5x master quantity (rounded down, min 1)
     "VA664...": 1.0,    # Tom gets exact master quantity
 }
@@ -1536,7 +1536,7 @@ Info: Follower 'Bob': cancel+replace order 67890 (master 12345 quantity changed)
 
 ## 🧪 Testing
 
-The project has a comprehensive test suite with 240+ tests across three layers: unit tests, integration scenarios, and live sandbox tests.
+The project has a comprehensive test suite with 165+ tests across three layers: unit tests, integration scenarios, and live sandbox tests.
 
 <details>
 <summary><strong>🚀 Running Tests</strong></summary>

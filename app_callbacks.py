@@ -34,7 +34,6 @@ from scripts.style_manager import *
 from services.accounts_service import do_post_account, do_delete_account, do_set_master
 from services.orders_service import do_delete_order
 from integrations.tradier_ import get_orders_trd
-from services.positions_service import do_close_position
 from services.settings_service import do_put_setting
 
 
@@ -753,60 +752,6 @@ def register_app_callbacks(app):
         return True, html.Div(content)
 
     # ==================================================================
-    # POSITION CLOSING
-    # ==================================================================
-
-    @app.callback(
-        Output('close-position-modal', 'opened'),
-        Output('close-position-message', 'children'),
-        Output('close-position-pending', 'data'),
-        Input({"type": "close-position", "index": ALL}, "n_clicks"),
-        prevent_initial_call=True,
-    )
-    def show_close_position_modal(n_clicks_list):
-        """Open confirmation modal for position close."""
-        ctx = callback_context
-        if not ctx.triggered:
-            return no_update, no_update, no_update
-        trigger = ctx.triggered[0]
-        if not trigger["value"]:
-            return no_update, no_update, no_update
-        # Use rsplit to handle prop_id safely (avoids json.loads issues with special chars)
-        prop_id_str = trigger["prop_id"].rsplit(".n_clicks", 1)[0]
-        prop_id = json.loads(prop_id_str)
-        index = prop_id["index"]
-        parts = index.split(":")
-        account_number, symbol, quantity, side = parts[0], parts[1], parts[2], parts[3]
-        return True, f"Are you sure you want to close {quantity} shares of {symbol} ({side}) on account {account_number} at market?", index
-
-    @app.callback(
-        Output('close-position-modal', 'opened', allow_duplicate=True),
-        Output('positions-alert', 'children'),
-        Output('url', 'pathname', allow_duplicate=True),
-        Input('close-position-confirm', 'n_clicks'),
-        Input('close-position-cancel', 'n_clicks'),
-        State('close-position-pending', 'data'),
-        prevent_initial_call=True,
-    )
-    def handle_close_position_confirm(confirm, cancel, pending):
-        """Handle position close confirm/cancel."""
-        ctx = callback_context
-        if not ctx.triggered:
-            return no_update, no_update, no_update
-        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if trigger_id == "close-position-confirm" and pending:
-            parts = pending.split(":")
-            account_number, symbol, quantity, side = parts[0], parts[1], parts[2], parts[3]
-            success, message = do_close_position(account_number, symbol, quantity, side)
-            if success:
-                db = connect_mongo()
-                username = current_user.username if current_user.is_authenticated else ""
-                print_store(db, username, f"Info: [{username}] Closed position {symbol} ({quantity} {side}) on account {account_number}")
-                return False, create_success_alert(message), "/positions"
-            return False, create_error_alert(message), no_update
-        return False, no_update, no_update
-
-    # ==================================================================
     # ACTIVITY LOG DELETE
     # ==================================================================
 
@@ -907,6 +852,66 @@ def register_app_callbacks(app):
         return dcc.send_string(output.getvalue(), f"activity_logs_{timestamp}.csv")
 
     # ==========================================================================
+    # ORDERS - EXPORT CSV
+    # ==========================================================================
+
+    @app.callback(
+        Output("export-orders-csv-download", "data"),
+        Input("export-orders-csv-btn", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def export_orders_csv(n_clicks):
+        """Export all orders across accounts to CSV."""
+        if not n_clicks:
+            return no_update
+
+        import datetime as dt
+        import io
+
+        from services.orders_service import do_get_orders
+
+        account_data = do_get_orders()
+
+        rows = []
+        for account, orders in account_data:
+            for order in orders:
+                if order.get("_error"):
+                    continue
+                # Convert timestamp to Eastern
+                create_date = order.get("create_date", "")
+                try:
+                    naive = dt.datetime.fromisoformat(str(create_date).replace("Z", "+00:00"))
+                    if naive.tzinfo is None:
+                        naive = utc_timezone.localize(naive)
+                    eastern = naive.astimezone(market_timezone)
+                    create_date = eastern.strftime("%Y-%m-%d %H:%M:%S ET")
+                except Exception:
+                    create_date = str(create_date)[:19]
+                legs = order.get("leg", [])
+                rows.append({
+                    "account": order.get("_account_alias", ""),
+                    "id": order.get("id", ""),
+                    "symbol": order.get("symbol", ""),
+                    "class": order.get("class", ""),
+                    "side": f"{len(legs)} legs" if legs else order.get("side", ""),
+                    "quantity": order.get("quantity", ""),
+                    "status": order.get("status", ""),
+                    "type": order.get("type", ""),
+                    "price": order.get("price", ""),
+                    "created": create_date,
+                    "tag": order.get("tag", ""),
+                })
+
+        output = io.StringIO()
+        output.write("account,id,symbol,class,side,quantity,status,type,price,created,tag\n")
+        for row in rows:
+            line = ",".join(f'"{str(row[k]).replace(chr(34), chr(34)+chr(34))}"' for k in row)
+            output.write(line + "\n")
+
+        timestamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        return dcc.send_string(output.getvalue(), f"orders_{timestamp}.csv")
+
+    # ==========================================================================
     # CALLBACK REGISTRY
     # ==========================================================================
 
@@ -933,11 +938,10 @@ def register_app_callbacks(app):
         'initial_load_orders': initial_load_orders,                      # Orders - Deferred load
         'show_cancel_order_modal': show_cancel_order_modal,              # Orders - Cancel modal toggle
         'handle_cancel_order_confirm': handle_cancel_order_confirm,      # Orders - Cancel confirm
+        'export_orders_csv': export_orders_csv,                          # Orders - Export CSV
 
         # Positions page
         'initial_load_positions': initial_load_positions,                # Positions - Deferred load
-        'show_close_position_modal': show_close_position_modal,          # Positions - Close modal toggle
-        'handle_close_position_confirm': handle_close_position_confirm,  # Positions - Close confirm
 
         # Routing (global)
         'route_page': route_page,                                        # Routing - Page nav / active state

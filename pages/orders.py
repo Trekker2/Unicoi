@@ -9,39 +9,57 @@ Page Layout:
     +------------------------------------------------------------------+
     |                         📝 Orders                                |
     |------------------------------------------------------------------|
-    |  [Account 1: Joe's Account (VA231...) ⭐ Master]                |
+    |                                           [📥 Export CSV]        |
+    |                                                                  |
+    |  [Account 1: Master Account (VA231...) ⭐ Master]               |
     |  +--------------------------------------------------------------+|
-    |  | Symbol | Class  | Side | Qty | Status  | Type | Price | ... ||
-    |  |--------|--------|------|-----|---------|------|-------|-----||
-    |  | AAPL   | equity | buy  | 10  | filled  | mkt  |       | ...||
-    |  | TSLA   | option | 2leg | 5   | pending | lmt  | 3.50  | ...||
-    |  |        |        |      |     |         |      |       |[Cancel]|
+    |  | ID | Account | Symbol | Class | Side | Qty | Status | Type  ||
+    |  |    | Price | Created (ET) | Tag | Action                     ||
+    |  |----|---------|--------|-------|------|-----|--------|-------||
+    |  | 12 | Master  | AAPL   | eqty  | buy  | 10 | filled | mkt   ||
+    |  | 34 | Master  | TSLA   | optn  | 2leg | 5  | open   | lmt   ||
     |  +--------------------------------------------------------------+|
     |                                                                  |
-    |  [Account 2: Bob's Account (VA442...)]                           |
+    |  [Account 2: Follower Account (VA442...)]                        |
     |  +--------------------------------------------------------------+|
-    |  | Symbol | Class  | Side | Qty | Status  | Type | Price | ... ||
+    |  | ID | Account | Symbol | ... (same columns)                   ||
     |  +--------------------------------------------------------------+|
     |                                                                  |
+    |  > About Orders                                                  |
+    |  (Follower Details Modal - triggered by master order ID click)   |
     |  (Cancel Order Confirmation Modal - hidden until triggered)      |
     +------------------------------------------------------------------+
 
 Key Features:
     - Skeleton loading for instant page render before API calls complete
     - Per-account sections with master badge indicator
+    - Account column on each row for easy identification
+    - Timestamps converted from UTC to Eastern time (ET suffix)
+    - Export CSV button downloads all orders across accounts
     - Color-coded status badges (green/blue/red/gray)
-    - Cancel button for orders in open statuses
-    - Cancel order with modal confirmation dialog
+    - Clickable master order IDs show follower details in a modal
+    - Cancel button for orders in open statuses with confirmation modal
     - Supports equity and multi-leg option orders
 
-Functions:
-    - update_orders(color_mode)  : Build real order tables grouped by account
-    - serve_orders(color_mode)   : Build skeleton layout (returned instantly)
+Local Helper Functions:
+    - _format_eastern(date_str): Convert UTC timestamp to Eastern time
+
+Shared Helper Functions (from style_manager):
+    - build_page_title_row(): Page title with emoji
+    - build_account_header(): Per-account section header with master badge
+    - build_page_info_accordion(): About section accordion
+    - get_theme_colors(): Dark/light theme color dict
+
+Main Functions:
+    - update_orders(color_mode): Build real order tables grouped by account
+    - serve_orders(color_mode): Build skeleton layout (returned instantly)
 """
 
 # ==============================================================================
 # IMPORTS
 # ==============================================================================
+
+import datetime as dt
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
@@ -50,6 +68,24 @@ import dash_mantine_components as dmc
 from constants import *
 from scripts.style_manager import *
 from services.orders_service import do_get_orders
+
+
+# ==============================================================================
+# HELPERS
+# ==============================================================================
+
+def _format_eastern(date_str):
+    """Convert a UTC date string from Tradier to Eastern time for display."""
+    if not date_str:
+        return ""
+    try:
+        naive = dt.datetime.fromisoformat(str(date_str).replace("Z", "+00:00"))
+        if naive.tzinfo is None:
+            naive = utc_timezone.localize(naive)
+        eastern = naive.astimezone(market_timezone)
+        return eastern.strftime("%Y-%m-%d %H:%M:%S ET")
+    except Exception:
+        return str(date_str)[:19]
 
 
 # ==============================================================================
@@ -133,6 +169,7 @@ def update_orders(color_mode="Dark"):
             row = html.Tr(
                 children=[
                     id_cell,
+                    html.Td(order.get("_account_alias", ""), style={"color": "var(--text-secondary)"}),
                     html.Td(order.get("symbol", ""), style={"color": "var(--text-primary)", "fontWeight": "500"}),
                     html.Td(order_class, style={"color": "var(--text-secondary)"}),
                     html.Td(leg_info, style={"color": "var(--text-primary)"}),
@@ -141,7 +178,7 @@ def update_orders(color_mode="Dark"):
                             style={"minWidth": "90px"}),
                     html.Td(order.get("type", ""), style={"color": "var(--text-secondary)"}),
                     html.Td(str(order.get("price", "") or ""), style={"color": "var(--text-primary)"}),
-                    html.Td(str(order.get("create_date", ""))[:19], style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
+                    html.Td(_format_eastern(order.get("create_date", "")), style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
                     html.Td(order.get("tag", ""), style={"color": "var(--text-secondary)", "maxWidth": "140px",
                                                           "overflow": "hidden", "textOverflow": "ellipsis",
                                                           "whiteSpace": "nowrap"}),
@@ -160,6 +197,7 @@ def update_orders(color_mode="Dark"):
         table_header = html.Thead(
             html.Tr([
                 html.Th("ID", style=th_style),
+                html.Th("Account", style=th_style),
                 html.Th("Symbol", style=th_style),
                 html.Th("Class", style=th_style),
                 html.Th("Side", style=th_style),
@@ -174,7 +212,7 @@ def update_orders(color_mode="Dark"):
         )
         if not table_rows:
             table_rows = [html.Tr(html.Td(
-                "No orders.", colSpan=11,
+                "No orders.", colSpan=12,
                 style={"color": "var(--text-secondary)", "textAlign": "center", "padding": "2rem"},
             ))]
         table = html.Table(
@@ -219,6 +257,18 @@ def serve_orders(color_mode="Dark"):
         children=[
             build_page_title_row("📝 Orders", color_mode),
             dcc.Interval(id="orders_initial_load", interval=100, max_intervals=1, n_intervals=0),
+            html.Div(
+                dmc.Button(
+                    "Export CSV",
+                    id="export-orders-csv-btn",
+                    color="grape",
+                    size="sm",
+                    variant="outline",
+                    leftSection=html.Span("📥"),
+                ),
+                style={"textAlign": "right", "maxWidth": "1400px", "margin": "0 auto 0.75rem auto"},
+            ),
+            dcc.Download(id="export-orders-csv-download"),
             dbc.Container(
                 id="orders-page-content",
                 children=skeleton_cards,
@@ -231,6 +281,7 @@ def serve_orders(color_mode="Dark"):
                 [
                     {"Table Columns": [
                         "ID -- order ID (clickable on master account to view follower details)",
+                        "Account -- account alias for this order",
                         "Symbol -- ticker symbol for the order",
                         "Class -- order class (equity or option)",
                         "Side -- buy/sell direction or number of legs for multi-leg orders",
@@ -238,7 +289,7 @@ def serve_orders(color_mode="Dark"):
                         "Status -- color-coded badge (green=filled, blue=open, red=rejected/canceled, gray=other)",
                         "Type -- order type (market, limit, stop, etc.)",
                         "Price -- limit or stop price if applicable",
-                        "Created -- order creation timestamp",
+                        "Created -- order creation timestamp in Eastern time",
                         "Tag -- order tag label if present",
                         "Action -- cancel button for orders in open statuses",
                     ]},
@@ -249,6 +300,8 @@ def serve_orders(color_mode="Dark"):
                         "Skeleton loading renders instantly before API calls complete",
                         "Supports equity and multi-leg option orders",
                         "Cancel order with confirmation modal dialog",
+                        "Timestamps converted from UTC to Eastern time",
+                        "Export CSV button downloads all orders across accounts",
                     ]},
                 ],
                 color_mode,

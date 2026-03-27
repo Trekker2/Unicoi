@@ -2,39 +2,44 @@
 Tradier Copy Bot - Positions Page
 
 Displays live positions from the Tradier API across all connected accounts.
-Uses a skeleton-first loading pattern: serve_positions renders instantly with
-placeholder cards, then update_positions populates real data via deferred callback.
+Read-only view with no action buttons. Uses a skeleton-first loading pattern:
+serve_positions renders instantly, then update_positions populates via callback.
 
 Page Layout:
     +------------------------------------------------------------------+
     |                       🗂️ Positions                               |
     |------------------------------------------------------------------|
-    |  [Account 1: Joe's Account (VA231...) ⭐ Master]                |
+    |  [Account 1: Master Account (VA231...) ⭐ Master]               |
     |  +--------------------------------------------------------------+|
-    |  | Symbol    | Qty  | Cost Basis | Date       | Action          ||
-    |  |-----------|------|------------|------------|-----------------|  |
-    |  | AAPL      | 100  | $15,230.00 | 2026-03-01 | [❌ Close]     ||
-    |  | SPY261218 | -5   | $3,400.00  | 2026-03-10 | [❌ Close]     ||
-    |  +--------------------------------------------------------------+|
-    |                                                                  |
-    |  [Account 2: Bob's Account (VA442...)]                           |
-    |  +--------------------------------------------------------------+|
-    |  | Symbol | Qty | Cost Basis | Date | Action                    ||
+    |  | Symbol    | Qty   | Cost Basis  | Date       |               ||
+    |  |-----------|-------|-------------|------------|               ||
+    |  | AAPL      | 100   | $15,230.00  | 2026-03-01 |               ||
+    |  | SPY261218 | -5    | $3,400.00   | 2026-03-10 |               ||
     |  +--------------------------------------------------------------+|
     |                                                                  |
-    |  (Close Position Confirmation Modal - hidden until triggered)    |
+    |  [Account 2: Follower Account (VA442...)]                        |
+    |  +--------------------------------------------------------------+|
+    |  | Symbol | Qty | Cost Basis | Date |                            ||
+    |  +--------------------------------------------------------------+|
+    |                                                                  |
+    |  > About Positions                                               |
     +------------------------------------------------------------------+
 
 Key Features:
     - Skeleton loading for instant page render before API calls complete
     - Per-account sections with master badge indicator
-    - Auto-detects close side (sell, buy_to_cover, sell_to_close, buy_to_close)
-    - Close position button with modal confirmation dialog
+    - Read-only display (no close/action buttons)
     - Supports equity and option position symbols
 
-Functions:
-    - update_positions(color_mode) : Build real position tables by account
-    - serve_positions(color_mode)  : Build skeleton layout (returned instantly)
+Shared Helper Functions (from style_manager):
+    - build_page_title_row(): Page title with emoji
+    - build_account_header(): Per-account section header with master badge
+    - build_page_info_accordion(): About section accordion
+    - get_theme_colors(): Dark/light theme color dict
+
+Main Functions:
+    - update_positions(color_mode): Build real position tables by account
+    - serve_positions(color_mode): Build skeleton layout (returned instantly)
 """
 
 # ==============================================================================
@@ -91,13 +96,7 @@ def update_positions(color_mode="Dark"):
             quantity = pos.get("quantity", 0)
             cost_basis = pos.get("cost_basis", 0)
 
-            if quantity > 0:
-                close_side = "sell"
-            else:
-                close_side = "buy_to_cover"
             symbol = pos.get("symbol", "")
-            if len(symbol) > 10:
-                close_side = "sell_to_close" if quantity > 0 else "buy_to_close"
 
             row = html.Tr(
                 children=[
@@ -105,14 +104,6 @@ def update_positions(color_mode="Dark"):
                     html.Td(str(quantity), style={"color": "var(--text-primary)"}),
                     html.Td(f"${cost_basis:,.2f}" if cost_basis else "", style={"color": "var(--text-secondary)"}),
                     html.Td(str(pos.get("date_acquired", ""))[:10], style={"color": "var(--text-secondary)"}),
-                    html.Td(
-                        dmc.Button(
-                            "❌ Close",
-                            id={"type": "close-position", "index": f"{act_nbr}:{symbol}:{quantity}:{close_side}"},
-                            color="red", size="xs", variant="outline",
-                        ),
-                        style={"textAlign": "center"},
-                    ),
                 ]
             )
             table_rows.append(row)
@@ -123,12 +114,11 @@ def update_positions(color_mode="Dark"):
                 html.Th("Qty", style=th_style),
                 html.Th("Cost Basis", style=th_style),
                 html.Th("Date", style=th_style),
-                html.Th("Action", style={**th_style, "textAlign": "center"}),
             ]),
         )
         if not table_rows:
             table_rows = [html.Tr(html.Td(
-                "No positions.", colSpan=5,
+                "No positions.", colSpan=4,
                 style={"color": "var(--text-secondary)", "textAlign": "center", "padding": "2rem"},
             ))]
         table = html.Table(
@@ -188,44 +178,16 @@ def serve_positions(color_mode="Dark"):
                         "Qty -- position quantity (negative for short positions)",
                         "Cost Basis -- total cost basis in dollars",
                         "Date -- date the position was acquired",
-                        "Action -- close position button with confirmation modal",
                     ]},
                     {"Features": [
                         "Per-account sections with master badge indicator",
                         "Skeleton loading renders instantly before API calls complete",
-                        "Auto-detects close side: sell, buy_to_cover, sell_to_close, or buy_to_close",
                         "Supports both equity and option position symbols",
                     ]},
                 ],
                 color_mode,
             ),
             html.Div(className="page-footer-spacer"),
-
-            # Close position confirmation modal
-            dcc.Store(id="close-position-pending", data=""),
-            html.Div(id="positions-alert", children=[], style={"display": "none"}),
-            dmc.Modal(
-                id="close-position-modal",
-                title="Confirm Close Position",
-                centered=True,
-                styles={
-                    "header": {"backgroundColor": theme["card_bg"], "color": "var(--text-primary)"},
-                    "title": {"color": "var(--text-primary)", "fontWeight": 600},
-                    "body": {"backgroundColor": theme["card_bg"], "color": "var(--text-primary)"},
-                    "close": {"color": "var(--text-primary)"},
-                    "overlay": {"backgroundColor": "rgba(0, 0, 0, 0.5)"},
-                },
-                children=[
-                    html.P(id="close-position-message", style={"marginBottom": "20px"}),
-                    html.Div(
-                        children=[
-                            dmc.Button("✅ Confirm", id="close-position-confirm", color="red", n_clicks=0, style={"marginRight": "10px"}),
-                            dmc.Button("❌ Cancel", id="close-position-cancel", color="gray", variant="outline", n_clicks=0),
-                        ],
-                        style={"display": "flex", "justifyContent": "flex-end"},
-                    ),
-                ],
-            ),
         ]
     )
 
