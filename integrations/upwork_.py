@@ -2003,6 +2003,281 @@ def export_chat_history(client_name, days=14, output_path=None):
     return result_data
 
 
+def convert_response_to_docx(input_path, output_path=None):
+    """Convert a plain-text response file to a formatted Word document (.docx).
+
+    Parses the structured text format used in client_resources/Response_*.txt
+    files and produces a styled Word document with headings, sub-headers,
+    bullet points, and monospace formatting.
+
+    Args:
+        input_path (str): Path to the .txt response file.
+        output_path (str, optional): Path for the output .docx file.
+            Defaults to the same path as input_path with .docx extension.
+
+    Returns:
+        dict: Conversion results
+            - success (bool): Whether conversion was successful
+            - input_path (str): Path to the source file
+            - output_path (str): Path to the generated .docx file
+            - error (str or None): Error message if conversion failed
+
+    Example:
+        >>> result = convert_response_to_docx("client_resources/Response_20260402.txt")
+        >>> print(f"Saved to {result['output_path']}")
+    """
+    from docx import Document
+    from docx.shared import Pt, Inches, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    import re
+
+    result_data = {
+        "success": False,
+        "input_path": input_path,
+        "output_path": output_path,
+        "error": None,
+    }
+
+    if output_path is None:
+        output_path = os.path.splitext(input_path)[0] + ".docx"
+        result_data["output_path"] = output_path
+
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            lines = f.read().split("\n")
+    except Exception as e:
+        result_data["error"] = f"Could not read input file: {e}"
+        return result_data
+
+    doc = Document()
+
+    # -- Configure styles --
+    style = doc.styles["Normal"]
+    style.font.name = "Calibri"
+    style.font.size = Pt(12)
+    style.paragraph_format.space_after = Pt(3)
+    style.paragraph_format.space_before = Pt(0)
+
+    for name, size, bold, color in [
+        ("Title",     Pt(22), True,  RGBColor(0x1F, 0x38, 0x64)),
+        ("Heading 1", Pt(16), True,  RGBColor(0x1F, 0x38, 0x64)),
+        ("Heading 2", Pt(13), True,  RGBColor(0x2E, 0x74, 0xB5)),
+        ("Heading 3", Pt(12), True,  RGBColor(0x2E, 0x74, 0xB5)),
+    ]:
+        s = doc.styles[name]
+        s.font.name = "Calibri"
+        s.font.size = size
+        s.font.bold = bold
+        s.font.color.rgb = color
+        s.paragraph_format.space_before = Pt(12) if name != "Title" else Pt(0)
+        s.paragraph_format.space_after = Pt(4)
+
+    # -- Identify section headers (lines between === separators) --
+    section_header_indices = set()
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if s.startswith("=" * 20):
+            j = i + 1
+            while j < len(lines) and lines[j].strip() == "":
+                j += 1
+            if j < len(lines) and not lines[j].strip().startswith("="):
+                k = j + 1
+                while k < len(lines) and lines[k].strip() == "":
+                    k += 1
+                if k < len(lines) and lines[k].strip().startswith("=" * 20):
+                    section_header_indices.add(j)
+
+    # -- Detect title line (first non-empty line, typically "PROJECT NAME - RESPONSE") --
+    title_text = None
+    for line in lines:
+        if line.strip():
+            title_text = line.strip()
+            break
+
+    def is_subheader(text):
+        """Check if text is an all-caps sub-header label."""
+        s = text.strip()
+        if len(s) < 8:
+            return False
+        cleaned = re.sub(r"[^A-Za-z ]", "", s)
+        words = cleaned.strip().split()
+        if len(words) < 2:
+            return False
+        if not cleaned.strip():
+            return False
+        if cleaned.strip().isupper() and len(cleaned.strip()) > 5:
+            if s.startswith("[") or s.startswith("-") or s.startswith("|"):
+                return False
+            if re.match(r"^[A-Z_,\s\)]+$", s):
+                return False
+            return True
+        return False
+
+    def is_numbered_caps_label(text):
+        """Check if text is a numbered all-caps label (e.g. '1. SECTION TITLE')."""
+        s = text.strip()
+        m = re.match(r"^(\d+)\.\s+([A-Z].*)", s)
+        if not m:
+            return False
+        rest = m.group(2)
+        cleaned = re.sub(r"[^A-Za-z ]", "", rest)
+        is_upper = bool(cleaned.strip() and cleaned.strip().isupper())
+        return is_upper
+
+    def is_log_line(text):
+        """Check if text is a timestamped log line."""
+        return text.strip().startswith("[2026-")
+
+    def is_separator(text):
+        """Check if text is a section separator line."""
+        s = text.strip()
+        return s.startswith("=" * 20) or (len(s) > 20 and all(c in "-= " for c in s))
+
+    def add_mono(text, color=RGBColor(0x33, 0x33, 0x99), size=Pt(12)):
+        """Add monospace-formatted paragraph."""
+        para = doc.add_paragraph()
+        run = para.add_run(text)
+        run.font.name = "Consolas"
+        run.font.size = size
+        run.font.color.rgb = color
+        para.paragraph_format.space_before = Pt(1)
+        para.paragraph_format.space_after = Pt(1)
+        return para
+
+    def add_mono_black(text, size=Pt(12)):
+        """Add monospace-formatted paragraph in black."""
+        para = doc.add_paragraph()
+        run = para.add_run(text)
+        run.font.name = "Consolas"
+        run.font.size = size
+        para.paragraph_format.space_before = Pt(1)
+        para.paragraph_format.space_after = Pt(1)
+        return para
+
+    def emit_line(idx):
+        """Process a single line and return next line index."""
+        line = lines[idx]
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip())
+
+        if stripped == "":
+            return idx + 1
+
+        if is_separator(stripped):
+            return idx + 1
+
+        # Title line (first non-empty line of the document)
+        if title_text and stripped == title_text:
+            para = doc.add_heading(stripped, level=0)
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            return idx + 1
+
+        # Date/From lines
+        if stripped.startswith("Date:") or stripped.startswith("From:"):
+            para = doc.add_paragraph(stripped)
+            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            return idx + 1
+
+        # Section headers
+        if idx in section_header_indices:
+            para = doc.add_heading(stripped, level=1)
+            para.paragraph_format.space_before = Pt(18)
+            return idx + 1
+
+        # Log lines
+        if is_log_line(stripped):
+            log_text = stripped
+            j = idx + 1
+            while j < len(lines):
+                ns = lines[j].strip()
+                ni = len(lines[j]) - len(lines[j].lstrip())
+                if ns and not is_log_line(ns) and not ns.startswith("=") and ni > indent:
+                    log_text += " " + ns
+                    j += 1
+                else:
+                    break
+            add_mono(log_text)
+            return j
+
+        # Dash separator lines
+        if re.match(r"^\s*-{20,}$", stripped):
+            add_mono_black(stripped, Pt(12))
+            return idx + 1
+
+        # Numbered caps labels as sub-headings
+        if is_numbered_caps_label(stripped) and indent >= 3:
+            doc.add_heading(stripped, level=3)
+            return idx + 1
+
+        # Sub-headers (all-caps labels)
+        if is_subheader(stripped):
+            doc.add_heading(stripped, level=2)
+            return idx + 1
+
+        # Bullet points
+        if stripped.startswith("- "):
+            doc.add_paragraph(stripped[2:], style="List Bullet")
+            return idx + 1
+
+        # Numbered lists
+        if re.match(r"^\s*\d+[\.\)]\s", stripped) and indent >= 3 and not is_numbered_caps_label(stripped):
+            text = re.sub(r"^\s*\d+[\.\)]\s*", "", stripped)
+            doc.add_paragraph(text, style="List Number")
+            return idx + 1
+
+        # Regular paragraph (merge continuation lines)
+        text_parts = [stripped]
+        j = idx + 1
+        while j < len(lines):
+            nl = lines[j]
+            ns = nl.strip()
+            ni = len(nl) - len(nl.lstrip())
+
+            if ns == "":
+                break
+            if is_separator(ns):
+                break
+            if j in section_header_indices:
+                break
+            if is_log_line(ns):
+                break
+            if is_subheader(ns):
+                break
+            if is_numbered_caps_label(ns) and ni >= 3:
+                break
+            if ns.startswith("- "):
+                break
+            if re.match(r"^\s*\d+[\.\)]\s", ns) and ni <= indent:
+                break
+
+            if ni >= indent:
+                text_parts.append(ns)
+                j += 1
+            else:
+                break
+
+        full_text = " ".join(text_parts)
+        para = doc.add_paragraph(full_text)
+        if indent >= 3:
+            para.paragraph_format.left_indent = Inches(0.3)
+        return j
+
+    # -- Process all lines --
+    i = 0
+    while i < len(lines):
+        i = emit_line(i)
+
+    # -- Save --
+    try:
+        doc.save(output_path)
+        result_data["success"] = True
+        print(f"Saved to {output_path}")
+    except Exception as e:
+        result_data["error"] = f"Could not save output file: {e}"
+
+    return result_data
+
+
 if __name__ == "__main__":
     import sys
 
@@ -2021,6 +2296,8 @@ if __name__ == "__main__":
         print("  --chat-history  Export chat history for a client (past 2 weeks)")
         print("      --client=NAME  Client name to export (default: Joe Weissinger)")
         print("      --days=N       Number of days of history (default: 14)")
+        print("  --to-docx    Convert a Response_*.txt file to formatted .docx")
+        print("      Usage: --to-docx client_resources/Response_20260403.txt")
         print("  --help, -h   Show this help message")
         print("\nFor tests, run: python tests/test_upwork.py")
 
@@ -2151,6 +2428,27 @@ if __name__ == "__main__":
             print(f"  File: {result['file_path']}")
         else:
             print(f"\nExport failed: {result['error']}")
+
+    elif '--to-docx' in sys.argv:
+        # Convert Response_*.txt to .docx
+        idx = sys.argv.index('--to-docx')
+        if idx + 1 < len(sys.argv):
+            input_file = sys.argv[idx + 1]
+        else:
+            print("Usage: --to-docx <path-to-txt-file>")
+            sys.exit(1)
+
+        if not os.path.exists(input_file):
+            print(f"File not found: {input_file}")
+            sys.exit(1)
+
+        result = convert_response_to_docx(input_file)
+        if result["success"]:
+            print(f"\nConversion complete!")
+            print(f"  Input:  {result['input_path']}")
+            print(f"  Output: {result['output_path']}")
+        else:
+            print(f"\nConversion failed: {result['error']}")
 
     else:
         print("Upwork Manager - use --help for options")
