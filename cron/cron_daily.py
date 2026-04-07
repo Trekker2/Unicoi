@@ -5,7 +5,7 @@ Runs once per day to perform database maintenance, orphan cleanup,
 and optional database backup.
 
 Tasks:
-    1. Clean up old logs (>16 hours, matching cleanup_old_data)
+    1. Clean up old logs (>30 days, matching cleanup_old_data)
     2. Clean up old trade history (>90 days)
     3. Clean up orphaned trades (accounts that no longer exist)
     4. Clean up orphaned history (accounts that no longer exist)
@@ -37,7 +37,7 @@ from scripts.database_manager import connect_mongo
 # MAINTENANCE TASKS
 # ==============================================================================
 
-def cleanup_old_logs(db, hours_limit=16):
+def cleanup_old_logs(db, hours_limit=720):
     """
     Clean up log entries older than hours_limit.
 
@@ -280,7 +280,7 @@ def main():
     total_tasks = 8
 
     # 1. Clean up old logs
-    print(f"\n[1/{total_tasks}] Cleaning up old logs (>16 hours)...")
+    print(f"\n[1/{total_tasks}] Cleaning up old logs (>30 days)...")
     try:
         removed = cleanup_old_logs(db, hours_limit=16)
         print(f"    Removed: {removed} log entries")

@@ -219,7 +219,7 @@ def print_store(db, user, log):
 # DATABASE MAINTENANCE
 # ==============================================================================
 
-def cleanup_old_data(db=None, hours_limit=16, days_limit=90):
+def cleanup_old_data(db=None, hours_limit=720, days_limit=90):
     """
     Clean up old log entries and historical data.
 
