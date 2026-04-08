@@ -772,42 +772,42 @@ def register_app_callbacks(app):
         do_delete_log(username, datetime_text)
         return ""
 
-    @app.callback(
-        Output('clear-logs-modal', 'opened'),
-        Input('clear-all-logs', 'n_clicks'),
-        prevent_initial_call=True,
-    )
-    def show_clear_logs_modal(n_clicks):
-        """Open confirmation modal for clearing logs."""
-        if n_clicks:
-            return True
-        return no_update
+    # @app.callback(
+    #     Output('clear-logs-modal', 'opened'),
+    #     Input('clear-all-logs', 'n_clicks'),
+    #     prevent_initial_call=True,
+    # )
+    # def show_clear_logs_modal(n_clicks):
+    #     """Open confirmation modal for clearing logs."""
+    #     if n_clicks:
+    #         return True
+    #     return no_update
 
-    @app.callback(
-        Output('clear-logs-modal', 'opened', allow_duplicate=True),
-        Output('url', 'pathname', allow_duplicate=True),
-        Input('clear-logs-confirm', 'n_clicks'),
-        Input('clear-logs-cancel', 'n_clicks'),
-        prevent_initial_call=True,
-    )
-    def handle_clear_logs_confirm(confirm, cancel):
-        """Handle clear logs confirm/cancel."""
-        ctx = callback_context
-        if not ctx.triggered:
-            return no_update, no_update
-
-        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if trigger_id == "clear-logs-confirm":
-            username = current_user.username if current_user.is_authenticated else master_username
-            db = connect_mongo()
-            db.get_collection("logs").update_many(
-                {},
-                {"$set": {"logs": []}},
-            )
-            print_store(db, username, f"Info: [{username}] Cleared all activity logs")
-            return False, "/activity"
-        else:
-            return False, no_update
+    # @app.callback(
+    #     Output('clear-logs-modal', 'opened', allow_duplicate=True),
+    #     Output('url', 'pathname', allow_duplicate=True),
+    #     Input('clear-logs-confirm', 'n_clicks'),
+    #     Input('clear-logs-cancel', 'n_clicks'),
+    #     prevent_initial_call=True,
+    # )
+    # def handle_clear_logs_confirm(confirm, cancel):
+    #     """Handle clear logs confirm/cancel."""
+    #     ctx = callback_context
+    #     if not ctx.triggered:
+    #         return no_update, no_update
+    #
+    #     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    #     if trigger_id == "clear-logs-confirm":
+    #         username = current_user.username if current_user.is_authenticated else master_username
+    #         db = connect_mongo()
+    #         db.get_collection("logs").update_many(
+    #             {},
+    #             {"$set": {"logs": []}},
+    #         )
+    #         print_store(db, username, f"Info: [{username}] Cleared all activity logs")
+    #         return False, "/activity"
+    #     else:
+    #         return False, no_update
 
     # ==========================================================================
     # ACTIVITY - EXPORT LOGS
@@ -924,8 +924,8 @@ def register_app_callbacks(app):
 
         # Activity page
         'handle_delete_log': handle_delete_log,                          # Activity - Delete single log
-        'show_clear_logs_modal': show_clear_logs_modal,                  # Activity - Clear logs modal
-        'handle_clear_logs_confirm': handle_clear_logs_confirm,          # Activity - Clear logs confirm
+        # 'show_clear_logs_modal': show_clear_logs_modal,                # Activity - Clear logs modal (hidden)
+        # 'handle_clear_logs_confirm': handle_clear_logs_confirm,        # Activity - Clear logs confirm (hidden)
         'export_activity_logs': export_activity_logs,                      # Activity - Export CSV
 
         # Login page

@@ -204,6 +204,7 @@ def serve_activity(color_mode="Dark"):
                 color="red",
                 variant="outline",
                 size="sm",
+                style={"display": "none"},
             ),
         ],
         style={"textAlign": "right", "marginBottom": "1rem", "display": "flex", "justifyContent": "flex-end", "gap": "0.5rem"},
