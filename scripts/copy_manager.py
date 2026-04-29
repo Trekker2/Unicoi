@@ -136,7 +136,7 @@ def reconstruct_multileg_order(master_order, multiplier=1):
         data[f"option_symbol[{i}]"] = leg.get("option_symbol", leg.get("symbol", ""))
         data[f"side[{i}]"] = leg.get("side", "")
         raw_qty = int(leg.get("quantity", 0)) * multiplier
-        data[f"quantity[{i}]"] = str(max(1, math.floor(raw_qty)))
+        data[f"quantity[{i}]"] = str(max(MIN_FOLLOWER_QTY, math.floor(raw_qty)))
 
     return data
 
@@ -154,7 +154,7 @@ def reconstruct_single_order(master_order, multiplier=1):
     """
     order_class = master_order.get("class", "equity")
     raw_qty = int(master_order.get("quantity", 0)) * multiplier
-    quantity = max(1, math.floor(raw_qty))
+    quantity = max(MIN_FOLLOWER_QTY, math.floor(raw_qty))
     order_type = master_order.get("type", "market")
 
     data = {
@@ -774,7 +774,7 @@ def run_copy_cycle(db, recent_log_list):
                     alias = follower.get("alias", act_nbr)
                     multiplier = float(settings.get("multipliers", {}).get(act_nbr, 1))
                     master_qty = int(order.get("quantity", 0))
-                    follower_qty = max(1, math.floor(master_qty * multiplier))
+                    follower_qty = max(MIN_FOLLOWER_QTY, math.floor(master_qty * multiplier))
                     print(f"Follower '{alias}': master_qty={master_qty} x multiplier={multiplier} = {master_qty * multiplier} -> floor={follower_qty}")
 
                     if legs:

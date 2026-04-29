@@ -122,6 +122,7 @@ NAVBAR_PAGE_EMOJIS = {page["id"]: page["emoji"] for page in NAVBAR_PAGES}
 DEFAULT_POLL_INTERVAL = 2
 DEFAULT_STALE_TIMEOUT = 5
 MAX_ERRORS = 50
+MIN_FOLLOWER_QTY = 1
 
 # ==============================================================================
 # ORDER STATUS CLASSIFICATIONS
