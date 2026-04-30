@@ -230,6 +230,8 @@ def forward_order_to_follower(db, master_order, follower, order_data, settings, 
     if not account_trades:
         account_trades = {}
     for trade in account_trades.get("trades", []):
+        if not trade:
+            continue
         if trade.get("master_id") == order_id:
             msg = f"Info: Follower '{alias}': already has order for master order {order_id}"
             if msg not in recent_log_list:

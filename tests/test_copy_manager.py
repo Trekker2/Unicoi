@@ -359,7 +359,7 @@ class TestGetNewMasterOrders(unittest.TestCase):
 
 
 class TestForwardOrderToFollower(unittest.TestCase):
-    """Tests for forward_order_to_follower() -- 4 tests."""
+    """Tests for forward_order_to_follower() -- 5 tests."""
 
     @classmethod
     def setUpClass(cls):
@@ -432,6 +432,24 @@ class TestForwardOrderToFollower(unittest.TestCase):
             mock_db, SAMPLE_ORDER, FOLLOWER_ACCOUNT, {}, settings, []
         )
         self.assertIsNone(result)
+
+    @patch("scripts.copy_manager.post_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_skips_none_trade_entries_in_dedup(self, mock_print_store, mock_post):
+        """Should skip None entries in trades list during dedup, not crash."""
+        mock_post.return_value = {"order": {"id": 55555, "status": "pending"}}
+        mock_db = MagicMock()
+        mock_db.get_collection.return_value.find_one.return_value = {
+            "trades": [None, None, {"master_id": 11111}]
+        }
+        settings = {"stale_timeout": 5}
+        order_data = {"class": "equity", "symbol": "SPY", "side": "buy", "quantity": "10", "type": "market"}
+
+        result = forward_order_to_follower(
+            mock_db, SAMPLE_ORDER, FOLLOWER_ACCOUNT, order_data, settings, []
+        )
+        self.assertIsNotNone(result)
+        mock_post.assert_called_once()
 
 
 class TestCheckMasterCancellations(unittest.TestCase):
