@@ -37,9 +37,13 @@ from scripts.copy_manager import (
     reconstruct_multileg_order, reconstruct_single_order,
     forward_order_to_follower, check_master_cancellations,
     check_master_modifications, _cancel_and_replace,
-    run_copy_cycle,
+    run_copy_cycle, calculate_follower_limit_price, check_stale_orders,
 )
-from constants import DEFAULT_STALE_TIMEOUT, market_timezone, utc_timezone
+from constants import (
+    DEFAULT_STALE_TIMEOUT, market_timezone, utc_timezone,
+    ORDER_MODE_MATCH_MASTER, ORDER_MODE_LIMIT_MATCH, ORDER_MODE_LIMIT_OFFSET,
+    MIN_LIMIT_PRICE,
+)
 
 
 # ==============================================================================
@@ -743,6 +747,334 @@ class TestRunCopyCycle(unittest.TestCase):
 
         result = run_copy_cycle(mock_db, [])
         self.assertFalse(result)
+
+
+class TestCalculateFollowerLimitPrice(unittest.TestCase):
+    """Tests for calculate_follower_limit_price() -- 10 tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_start_time = time.time()
+
+    @classmethod
+    def tearDownClass(cls):
+        elapsed = time.time() - cls.test_start_time
+        print(f"\nTestCalculateFollowerLimitPrice completed in {elapsed:.2f} seconds")
+
+    def test_match_master_returns_none(self):
+        """Match master mode should return (None, None)."""
+        master = {"price": 0.40, "type": "credit"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_MATCH_MASTER)
+        self.assertIsNone(price)
+        self.assertIsNone(type_ovr)
+
+    def test_limit_match_credit_spread(self):
+        """Limit match on a credit spread should keep type=credit and price=master."""
+        master = {"price": 0.40, "type": "credit", "leg": [{"side": "sell_to_open"}]}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_LIMIT_MATCH)
+        self.assertEqual(price, 0.40)
+        self.assertEqual(type_ovr, "credit")
+
+    def test_limit_offset_credit_subtracts(self):
+        """Credit spread + offset reduces follower limit (accept less premium, fill faster)."""
+        master = {"price": 0.40, "type": "credit", "leg": [{"side": "sell_to_open"}]}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, 0.35)
+        self.assertEqual(type_ovr, "credit")
+
+    def test_limit_offset_debit_adds(self):
+        """Debit spread + offset increases follower limit (pay more, fill faster)."""
+        master = {"price": 0.40, "type": "debit", "leg": [{"side": "buy_to_open"}]}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, 0.45)
+        self.assertEqual(type_ovr, "debit")
+
+    def test_limit_offset_single_leg_sell_subtracts(self):
+        """Single-leg sell with offset reduces limit price."""
+        master = {"price": 1.00, "type": "limit", "side": "sell_to_close"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.10, ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, 0.90)
+        self.assertEqual(type_ovr, "limit")
+
+    def test_limit_offset_single_leg_buy_adds(self):
+        """Single-leg buy with offset increases limit price."""
+        master = {"price": 1.00, "type": "limit", "side": "buy_to_open"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.10, ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, 1.10)
+        self.assertEqual(type_ovr, "limit")
+
+    def test_no_master_price_returns_none(self):
+        """Master with no price (market order) returns (None, None) — fallback to current behavior."""
+        master = {"price": 0, "type": "market"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_LIMIT_OFFSET)
+        self.assertIsNone(price)
+        self.assertIsNone(type_ovr)
+
+    def test_clamp_to_min_limit_price(self):
+        """Subtracting offset that would go negative clamps to MIN_LIMIT_PRICE."""
+        master = {"price": 0.05, "type": "credit"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.10, ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, MIN_LIMIT_PRICE)
+        self.assertEqual(type_ovr, "credit")
+
+    def test_invalid_offset_treated_as_zero(self):
+        """Garbage offset value falls back to 0 — equivalent to limit_match price."""
+        master = {"price": 0.50, "type": "credit"}
+        price, _ = calculate_follower_limit_price(master, "not-a-number", ORDER_MODE_LIMIT_OFFSET)
+        self.assertEqual(price, 0.50)
+
+    def test_invalid_master_price_returns_none(self):
+        """Garbage master price is treated as missing."""
+        master = {"price": "abc", "type": "credit"}
+        price, type_ovr = calculate_follower_limit_price(master, 0.05, ORDER_MODE_LIMIT_OFFSET)
+        self.assertIsNone(price)
+        self.assertIsNone(type_ovr)
+
+
+class TestReconstructWithModes(unittest.TestCase):
+    """Test reconstruct helpers under each order mode -- 8 tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_start_time = time.time()
+
+    @classmethod
+    def tearDownClass(cls):
+        elapsed = time.time() - cls.test_start_time
+        print(f"\nTestReconstructWithModes completed in {elapsed:.2f} seconds")
+
+    def _credit_spread(self, price=0.40):
+        return {
+            "id": 1, "class": "multileg", "symbol": "SPX",
+            "duration": "day", "type": "credit", "status": "open", "price": price,
+            "leg": [
+                {"option_symbol": "SPX...P5000", "side": "sell_to_open", "quantity": 1},
+                {"option_symbol": "SPX...P4990", "side": "buy_to_open", "quantity": 1},
+            ],
+        }
+
+    def test_multileg_match_master_stays_market(self):
+        """Match master should still produce type=market with no price for multi-leg."""
+        data = reconstruct_multileg_order(self._credit_spread(), 1, ORDER_MODE_MATCH_MASTER, 0.05)
+        self.assertEqual(data["type"], "market")
+        self.assertNotIn("price", data)
+
+    def test_multileg_limit_match_keeps_credit_type(self):
+        """Limit at master price should preserve credit type and use master price."""
+        data = reconstruct_multileg_order(self._credit_spread(0.50), 1, ORDER_MODE_LIMIT_MATCH, 0.05)
+        self.assertEqual(data["type"], "credit")
+        self.assertEqual(data["price"], 0.50)
+
+    def test_multileg_limit_offset_subtracts_for_credit(self):
+        """Limit with offset on credit spread: price = master - offset."""
+        data = reconstruct_multileg_order(self._credit_spread(0.40), 1, ORDER_MODE_LIMIT_OFFSET, 0.05)
+        self.assertEqual(data["type"], "credit")
+        self.assertEqual(data["price"], 0.35)
+
+    def test_multileg_limit_offset_adds_for_debit(self):
+        """Limit with offset on debit spread: price = master + offset."""
+        master = {**self._credit_spread(0.40), "type": "debit"}
+        data = reconstruct_multileg_order(master, 1, ORDER_MODE_LIMIT_OFFSET, 0.05)
+        self.assertEqual(data["type"], "debit")
+        self.assertEqual(data["price"], 0.45)
+
+    def test_single_match_master_market_unchanged(self):
+        """Match master should preserve a master market order with no price field."""
+        data = reconstruct_single_order(SAMPLE_SINGLE_ORDER, 1, ORDER_MODE_MATCH_MASTER, 0.05)
+        self.assertEqual(data["type"], "market")
+        self.assertNotIn("price", data)
+
+    def test_single_limit_match_uses_master_price(self):
+        """Limit match on a single-leg option order forces type=limit with master price."""
+        data = reconstruct_single_order(SAMPLE_OPTION_ORDER, 1, ORDER_MODE_LIMIT_MATCH, 0.05)
+        self.assertEqual(data["type"], "limit")
+        self.assertEqual(data["price"], 2.50)
+
+    def test_single_limit_offset_buy_adds(self):
+        """Single-leg buy_to_open + offset increases price."""
+        data = reconstruct_single_order(SAMPLE_OPTION_ORDER, 1, ORDER_MODE_LIMIT_OFFSET, 0.10)
+        self.assertEqual(data["type"], "limit")
+        self.assertEqual(data["price"], 2.60)
+
+    def test_single_market_master_falls_back(self):
+        """Limit modes on a master market order (no price) fall back to match-master behavior."""
+        master_market = {**SAMPLE_SINGLE_ORDER}
+        data = reconstruct_single_order(master_market, 1, ORDER_MODE_LIMIT_OFFSET, 0.05)
+        self.assertEqual(data["type"], "market")
+        self.assertNotIn("price", data)
+
+
+class TestForwardLogsModeAndPrice(unittest.TestCase):
+    """Activity log line should include mode + limit price -- 2 tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_start_time = time.time()
+
+    @classmethod
+    def tearDownClass(cls):
+        elapsed = time.time() - cls.test_start_time
+        print(f"\nTestForwardLogsModeAndPrice completed in {elapsed:.2f} seconds")
+
+    @patch("scripts.copy_manager.post_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_logs_mode_and_limit_for_limit_offset(self, mock_print_store, mock_post):
+        """Limit-mode follower log line should include mode= and limit=."""
+        mock_post.return_value = {"order": {"id": 7777, "status": "ok"}}
+        mock_db = MagicMock()
+        mock_db.get_collection.return_value.find_one.return_value = None
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_LIMIT_OFFSET}
+        order_data = {"class": "multileg", "type": "credit", "price": 0.35, "tag": "x"}
+        forward_order_to_follower(
+            mock_db, SAMPLE_ORDER, follower, order_data, {"stale_timeout": 5}, [],
+        )
+        # First positional arg is db, second is master_username, third is the message
+        log_msgs = [c.args[2] for c in mock_print_store.call_args_list if "order placed" in c.args[2]]
+        self.assertTrue(any("mode=limit_offset" in m and "limit=0.35" in m for m in log_msgs))
+
+    @patch("scripts.copy_manager.post_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_logs_mode_only_for_match_master(self, mock_print_store, mock_post):
+        """Match-master follower log line should include mode= but no limit=."""
+        mock_post.return_value = {"order": {"id": 7777, "status": "ok"}}
+        mock_db = MagicMock()
+        mock_db.get_collection.return_value.find_one.return_value = None
+        order_data = {"class": "equity", "type": "market", "tag": "x"}
+        forward_order_to_follower(
+            mock_db, SAMPLE_ORDER, FOLLOWER_ACCOUNT, order_data, {"stale_timeout": 5}, [],
+        )
+        log_msgs = [c.args[2] for c in mock_print_store.call_args_list if "order placed" in c.args[2]]
+        self.assertTrue(any("mode=match_master" in m for m in log_msgs))
+        self.assertFalse(any("limit=" in m for m in log_msgs))
+
+
+class TestStaleSkipForLimitMode(unittest.TestCase):
+    """Stale-cancel handling should bypass limit-mode followers -- 3 tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_start_time = time.time()
+
+    @classmethod
+    def tearDownClass(cls):
+        elapsed = time.time() - cls.test_start_time
+        print(f"\nTestStaleSkipForLimitMode completed in {elapsed:.2f} seconds")
+
+    @patch("scripts.copy_manager.post_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_forward_does_not_skip_stale_for_limit_mode(self, mock_print_store, mock_post):
+        """A 10-min-old master order should still copy if follower is in limit mode."""
+        mock_post.return_value = {"order": {"id": 7777, "status": "ok"}}
+        stale_order = {**SAMPLE_ORDER}
+        stale_order["create_date"] = (
+            dt.datetime.now(tz=utc_timezone) - dt.timedelta(minutes=10)
+        ).isoformat()
+        mock_db = MagicMock()
+        mock_db.get_collection.return_value.find_one.return_value = None
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_LIMIT_OFFSET}
+        order_data = {"class": "multileg", "type": "credit", "price": 0.35, "tag": "x"}
+        result = forward_order_to_follower(
+            mock_db, stale_order, follower, order_data, {"stale_timeout": 5}, [],
+        )
+        self.assertIsNotNone(result)
+        mock_post.assert_called_once()
+
+    @patch("scripts.copy_manager.delete_orders_trd")
+    @patch("scripts.copy_manager.get_orders_trd")
+    def test_check_stale_skips_limit_mode_follower(self, mock_get_orders, mock_delete):
+        """check_stale_orders should not poll or cancel for limit-mode followers."""
+        old_create = (dt.datetime.now(tz=utc_timezone) - dt.timedelta(minutes=30)).isoformat()
+        mock_get_orders.return_value = [{"id": 1, "status": "open", "create_date": old_create}]
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_LIMIT_OFFSET}
+        check_stale_orders(MagicMock(), [follower], stale_timeout=5)
+        mock_delete.assert_not_called()
+        mock_get_orders.assert_not_called()
+
+    @patch("scripts.copy_manager.delete_orders_trd")
+    @patch("scripts.copy_manager.get_orders_trd")
+    def test_check_stale_still_runs_for_match_master(self, mock_get_orders, mock_delete):
+        """check_stale_orders should still cancel old orders on match-master accounts."""
+        old_create = (dt.datetime.now(tz=utc_timezone) - dt.timedelta(minutes=30)).isoformat()
+        mock_get_orders.return_value = [{"id": 1, "status": "open", "create_date": old_create}]
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_MATCH_MASTER}
+        check_stale_orders(MagicMock(), [follower], stale_timeout=5)
+        mock_delete.assert_called_once()
+
+
+class TestModificationSyncReappliesOffset(unittest.TestCase):
+    """Modification sync should re-apply offset on master price changes -- 2 tests."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_start_time = time.time()
+
+    @classmethod
+    def tearDownClass(cls):
+        elapsed = time.time() - cls.test_start_time
+        print(f"\nTestModificationSyncReappliesOffset completed in {elapsed:.2f} seconds")
+
+    @patch("scripts.copy_manager.modify_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_credit_spread_offset_reapplied(self, mock_ps, mock_modify):
+        """Master credit moves $0.50 -> $0.60; follower limit should become $0.55 (offset $0.05)."""
+        mock_modify.return_value = {"order": {"id": 55555, "status": "ok"}}
+        master_orders = [{
+            "id": 10001, "status": "open", "price": 0.60,
+            "stop": None, "duration": "day", "type": "credit", "quantity": 10,
+            "leg": [{"side": "sell_to_open", "quantity": 1}],
+        }]
+        mock_db = MagicMock()
+        # Snapshot was at 0.50 follower-side too
+        trade = {
+            "id": 55555, "master_id": 10001, "status": "open",
+            "master_snapshot": {
+                "price": 0.50, "stop": None, "duration": "day",
+                "type": "credit", "quantity": 10,
+                "leg_quantities": [1],
+            },
+            "copied_fields": {
+                "price": 0.45, "stop": None, "duration": "day",
+                "type": "credit", "quantity": "1",
+            },
+        }
+        mock_db.get_collection.return_value.find_one.return_value = {"trades": [trade]}
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_LIMIT_OFFSET}
+        settings = {"multipliers": {"VA222222": 1}, "limit_offset": 0.05}
+        check_master_modifications(mock_db, master_orders, [follower], settings)
+        mock_modify.assert_called_once()
+        sent_data = mock_modify.call_args[1]["data"]
+        self.assertAlmostEqual(sent_data["price"], 0.55, places=2)
+
+    @patch("scripts.copy_manager.modify_orders_trd")
+    @patch("scripts.copy_manager.print_store")
+    def test_match_master_uses_master_price_directly(self, mock_ps, mock_modify):
+        """Match-master follower should still receive the master's new price unmodified."""
+        mock_modify.return_value = {"order": {"id": 55555, "status": "ok"}}
+        master_orders = [{
+            "id": 10001, "status": "open", "price": 0.60,
+            "stop": None, "duration": "day", "type": "credit", "quantity": 10,
+            "leg": [{"side": "sell_to_open", "quantity": 1}],
+        }]
+        trade = {
+            "id": 55555, "master_id": 10001, "status": "open",
+            "master_snapshot": {
+                "price": 0.50, "stop": None, "duration": "day",
+                "type": "credit", "quantity": 10,
+                "leg_quantities": [1],
+            },
+            "copied_fields": {
+                "price": 0.50, "stop": None, "duration": "day",
+                "type": "credit", "quantity": "1",
+            },
+        }
+        mock_db = MagicMock()
+        mock_db.get_collection.return_value.find_one.return_value = {"trades": [trade]}
+        follower = {**FOLLOWER_ACCOUNT, "order_mode": ORDER_MODE_MATCH_MASTER}
+        settings = {"multipliers": {"VA222222": 1}, "limit_offset": 0.05}
+        check_master_modifications(mock_db, master_orders, [follower], settings)
+        mock_modify.assert_called_once()
+        sent_data = mock_modify.call_args[1]["data"]
+        self.assertAlmostEqual(sent_data["price"], 0.60, places=2)
 
 
 # ==============================================================================

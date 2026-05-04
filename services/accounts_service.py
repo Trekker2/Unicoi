@@ -8,12 +8,14 @@ Key Functions:
     - do_post_account: Add a new account
     - do_delete_account: Remove an account
     - do_set_master: Set master account (only one allowed)
+    - do_set_account_order_mode: Set per-follower order mode
 """
 
 # ==============================================================================
 # IMPORTS
 # ==============================================================================
 
+from constants import DEFAULT_ORDER_MODE, ORDER_MODES
 from scripts.database_manager import connect_mongo, serialize_for_mongo
 from integrations.tradier_ import validate_account_trd
 
@@ -127,6 +129,31 @@ def do_set_master(account_number):
     )
     if result.modified_count > 0:
         return True, f"Account {account_number} set as master"
+    return False, f"Account {account_number} not found"
+
+
+def do_set_account_order_mode(account_number, order_mode):
+    """
+    Set the order mode for a follower account.
+
+    Args:
+        account_number: Tradier account number
+        order_mode: One of constants.ORDER_MODE_*
+
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    valid_modes = [m["value"] for m in ORDER_MODES]
+    if order_mode not in valid_modes:
+        return False, f"Invalid order mode '{order_mode}'"
+
+    db = connect_mongo()
+    result = db.get_collection("accounts").update_one(
+        {"account_number": account_number},
+        {"$set": {"order_mode": order_mode}},
+    )
+    if result.matched_count > 0:
+        return True, f"Order mode for {account_number} set to {order_mode}"
     return False, f"Account {account_number} not found"
 
 # END

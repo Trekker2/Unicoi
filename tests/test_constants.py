@@ -80,8 +80,16 @@ class TestDefaultSettings(unittest.TestCase):
 
     def test_has_all_required_keys(self):
         """Should contain all expected setting keys."""
-        expected = {"use_automation", "poll_interval", "stale_timeout", "color_mode", "use_streaming", "multipliers"}
+        expected = {
+            "use_automation", "poll_interval", "stale_timeout", "color_mode",
+            "use_streaming", "multipliers", "limit_offset",
+        }
         self.assertEqual(set(self.defaults.keys()), expected)
+
+    def test_default_limit_offset(self):
+        """Limit offset default should match constant."""
+        from constants import DEFAULT_LIMIT_OFFSET
+        self.assertEqual(self.defaults["limit_offset"], DEFAULT_LIMIT_OFFSET)
 
 
 class TestStatusClassifications(unittest.TestCase):

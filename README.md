@@ -28,17 +28,19 @@ The Tradier Copy Bot is an automated trade replication system built with Python 
 - 🔄 **Order Copying** - Detects new orders on master and copies them to all follower accounts automatically
 - 📊 **Multi-Leg Support** - Copies single-leg equities/options and multi-leg spreads using Tradier indexed notation
 - ✖️ **Per-Account Multipliers** - Scale order quantities per follower account (e.g., 0.5x, 1x, 2x, 5x)
-- 🔧 **Modification Sync** - Detects modified master orders and syncs price/stop/duration changes to followers via PUT; quantity changes trigger cancel + replace
+- 🎯 **Per-Account Order Type** - Each follower runs in `Match Master` (market, today's behavior), `Limit at Master Price`, or `Limit with Offset` mode
+- 💲 **Limit Offset** - Global dollar offset applied in the fill-favorable direction (master − offset for credit/sell, master + offset for debit/buy) for accounts in `Limit with Offset` mode
+- 🔧 **Modification Sync** - Detects modified master orders and syncs price/stop/duration changes to followers via PUT (offset re-applied for limit-mode followers); quantity changes trigger cancel + replace
 - ❌ **Cancellation Sync** - Detects canceled master orders and automatically syncs cancellations to all followers
-- ⏱️ **Stale Order Filtering** - Skips orders older than configurable timeout (default 5 min) to prevent delayed copies
+- ⏱️ **Stale Order Filtering** - Skips orders older than configurable timeout (default 5 min); bypassed for followers in a limit mode so the limit can sit through the session
 - 🕐 **Market-Aware Scheduling** - Respects NYSE market hours via exchange_calendars, sleeps during market closure
 - 🛑 **Automation Killswitch** - Global on/off toggle for the copy engine with confirmation modal
 - 🏷️ **Order Tags** - Follower orders are tagged with `follower-{symbol}-{master_order_id}` for lineage tracking
 - 🔗 **Order Lineage** - Clickable master order IDs show follower order details (alias, order ID, status) in a modal
 - 🌙 **Dark/Light Mode** - Tradier purple-themed dashboard with dark/light toggle via MantineProvider
-- 📋 **Activity Logging** - All operations logged with Info/Warning/Error prefixes, Master/Follower labels, and CSV export
+- 📋 **Activity Logging** - All operations logged with Info/Warning/Error prefixes, Master/Follower labels, mode + limit price per copied order, CSV export
 - 🔒 **Authentication** - Flask-Login with bcrypt password hashing and session management
-- 🧪 **166+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
+- 🧪 **192+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
 
 ---
 
@@ -317,7 +319,7 @@ tradier-copy-bot/
 │   ├── __init__.py                    # Cron module exports
 │   └── cron_daily.py                  # Daily cleanup (logs, history, orphans, indexes)
 ├── 📦 client_resources/               # Client-facing documents and resources
-└── 🧪 tests/                          # Comprehensive test suite (166+ tests)
+└── 🧪 tests/                          # Comprehensive test suite (192+ tests)
     ├── __init__.py                    # Test module initialization
     ├── run_all_tests.py               # Master test runner (unit + scenarios + live)
     ├── scenario_runner.py             # YAML-based integration scenario runner
@@ -1054,10 +1056,10 @@ Manages connected Tradier brokerage accounts. Users can view all linked accounts
 |------------------------------------------------------------------|
 |  [Connected Accounts Card]                                       |
 |  +--------------------------------------------------------------+|
-|  | Alias | Account # | API Key (masked) | Master ◉ | Delete 🗑 ||
-|  |-------|-----------|------------------|----------|------------||
-|  | Joe   | VA231...  | 9i7X***          |  [on]    |   [x]     ||
-|  | Fllwr | VA442...  | kR4z***          |  [off]   |   [x]     ||
+|  | Alias | Account # | API Key (masked) | Order Type | Master ◉ | Delete 🗑 ||
+|  |-------|-----------|------------------|-----------|----------|------------||
+|  | Joe   | VA231...  | 9i7X***          |  —        |  [on]    |   [x]     ||
+|  | Fllwr | VA442...  | kR4z***          |  Match… ▾ |  [off]   |   [x]     ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
 |  [Add Account Card]                                              |
@@ -1076,6 +1078,7 @@ Manages connected Tradier brokerage accounts. Users can view all linked accounts
 | Alias | Friendly display name for the account |
 | Account # | Tradier account number (e.g., VA231...) |
 | API Key | Masked with asterisks for security (`hide_text()`) |
+| Order Type | Per-follower copy mode: `Match Master` (today's behavior, market orders), `Limit at Master Price`, or `Limit with Offset` (master ± offset). Master row shows `—`. |
 | Master | Toggle switch (grape-colored, only one active at a time) |
 | Delete | Delete button with confirmation modal |
 
@@ -1268,6 +1271,7 @@ Provides controls for the copy engine, per-account trade multipliers, and displa
 |  | 📡 Use Streaming              [on/off]  (WebSocket mode)    ||
 |  | Poll Interval (sec)           [___2__]  (hidden if streaming)||
 |  | Stale Timeout (min)           [___5__]                       ||
+|  | Limit Offset ($)              [_0.05_]  (Limit with Offset)  ||
 |  +--------------------------------------------------------------+|
 |                                                                  |
 |  [Per-Account Multipliers Card]                                  |
@@ -1291,7 +1295,8 @@ Provides controls for the copy engine, per-account trade multipliers, and displa
 | Enable Automation | Toggle (on/off) | Off | Master killswitch for the copy engine — requires confirmation modal |
 | Use Streaming | Toggle (on/off) | Off | Switch between WebSocket streaming and polling modes |
 | Poll Interval | Number input (sec) | 2 | Seconds between poll cycles (hidden when streaming is on) |
-| Stale Timeout | Number input (min) | 5 | Maximum age for orders to be eligible for copying |
+| Stale Timeout | Number input (min) | 5 | Maximum age for orders to be eligible for copying (bypassed for limit-mode followers) |
+| Limit Offset | Number input ($) | 0.05 | Dollar offset applied for accounts in `Limit with Offset` mode; follower limit = master ± offset in fill-favorable direction |
 
 **Per-Account Multipliers:**
 - Displays one number input per follower account
@@ -1321,10 +1326,17 @@ All settings are stored in the `settings` MongoDB collection as a single documen
 |---------|------|---------|-------------|
 | `use_automation` | bool | `False` | Master killswitch — if False, copy engine skips all copying |
 | `poll_interval` | int | `2` | Seconds between copy engine poll cycles |
-| `stale_timeout` | int | `5` | Minutes before an order is considered stale and skipped |
+| `stale_timeout` | int | `5` | Minutes before an order is considered stale and skipped (bypassed for limit-mode followers) |
 | `use_streaming` | bool | `False` | Enable WebSocket streaming (faster detection, lower API usage) |
 | `color_mode` | str | `"Dark"` | Dashboard color mode ("Dark" or "Light") |
 | `multipliers` | dict | `{}` | Per-account quantity multipliers keyed by account number |
+| `limit_offset` | float | `0.05` | Dollar offset applied for accounts in `Limit with Offset` mode |
+
+**Per-account fields (on `accounts` collection):**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `order_mode` | str | `"match_master"` | One of `match_master` (today's behavior — follower copies as market), `limit_match` (follower limits at master price), or `limit_offset` (follower limits at master ± offset, fill-favorable direction) |
 
 </div>
 </details>
@@ -1558,20 +1570,20 @@ python -m tests.live_test_runner --cleanup      # Cancel leftover test orders
 </details>
 
 <details>
-<summary><strong>🧩 Unit Tests — 166 tests</strong></summary>
+<summary><strong>🧩 Unit Tests — 192 tests</strong></summary>
 
 <div style="padding-left: 20px;">
 
 | Module | Tests | Coverage |
 |--------|-------|----------|
 | `test_helper.py` | 29 | `flatten()`, `format_tag()`, `hide_text()`, `hash_password()`, `verify_password()`, `is_market_open()`, `get_current_username()` |
-| `test_constants.py` | 30 | Default settings, status classifications (bad, open, closed, filled, good), side classifications (long, short, inverse), navbar config, environment detection |
+| `test_constants.py` | 31 | Default settings (incl. `limit_offset`), status classifications (bad, open, closed, filled, good), side classifications (long, short, inverse), navbar config, environment detection |
 | `test_database_manager.py` | 18 | `serialize_for_mongo()` (UUID, Enum, Decimal, nested objects), `store_log_db()`, `print_store()`, `cleanup_old_data()`, connection pool behavior |
-| `test_copy_manager.py` | 39 | `reconstruct_single_order()`, `reconstruct_multileg_order()`, `run_copy_cycle()`, `forward_order_to_follower()` (including null trade guard), `check_master_cancellations()`, `check_master_modifications()`, `check_stale_orders()`, dedup logic, multiplier scaling |
+| `test_copy_manager.py` | 64 | `calculate_follower_limit_price()`, `reconstruct_single_order()` / `reconstruct_multileg_order()` under all three order modes, `run_copy_cycle()`, `forward_order_to_follower()` (including null-trade guard, mode/limit logging, stale-skip for limit-mode), `check_master_cancellations()`, `check_master_modifications()` (incl. offset re-apply on master price change), `check_stale_orders()` (incl. limit-mode skip), dedup logic, multiplier scaling |
 | `test_services.py` | 24 | `do_get_settings()`, `do_put_setting()`, `do_get_accounts()`, `do_post_account()`, `do_delete_account()`, `do_set_master()`, `do_get_orders()`, `do_get_positions()`, `do_get_logs()` |
 | `test_cron_daily.py` | 15 | Log cleanup (16h retention), history cleanup (90d retention), orphan removal (accounts/history/logs), index verification, health check |
 
-**Total: 155 unit tests + 11 sandbox API tests = 166 tests**
+**Total: 181 unit tests + 11 sandbox API tests = 192 tests**
 
 </div>
 </details>
@@ -1634,11 +1646,11 @@ Phase-based tests against the real Tradier sandbox API (`VA` prefix accounts). T
 
 | Layer | Count | Requires API | Description |
 |-------|-------|-------------|-------------|
-| Unit Tests | 154 | No | Pure logic tests with mocked dependencies |
+| Unit Tests | 181 | No | Pure logic tests with mocked dependencies |
 | Sandbox API Tests | 11 | Yes (sandbox) | Tradier sandbox connectivity and data validation |
 | Integration Scenarios | 13 | No | YAML-driven end-to-end copy engine scenarios |
 | Live Sandbox Tests | 39 assertions | Yes (sandbox) | Full order lifecycle through real copy engine |
-| **Total** | **217+ tests** | — | — |
+| **Total** | **244+ tests** | — | — |
 
 </div>
 </details>

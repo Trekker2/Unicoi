@@ -5,6 +5,7 @@ This module contains the core copy trading logic that monitors a master account
 and replicates orders to follower accounts with configurable multipliers.
 
 Key Functions:
+    - calculate_follower_limit_price: Compute follower limit price for a given mode
     - get_master_account: Query DB for master account
     - get_follower_accounts: Query DB for all non-master accounts
     - get_new_master_orders: Poll master for unhandled orders
@@ -21,6 +22,9 @@ Notes:
     - Multi-leg orders use indexed notation for Tradier API
     - Deduplication via history + trades collections
     - Stale timeout prevents copying old orders
+    - Per-account order_mode: match_master (default), limit_match, or limit_offset.
+      Limit modes route the follower into a limit order at master price ± offset
+      and bypass stale-cancel so the limit can sit through the session.
 """
 
 # ==============================================================================
@@ -35,6 +39,75 @@ import traceback
 from constants import *
 from integrations.tradier_ import *
 from scripts.database_manager import *
+
+
+# ==============================================================================
+# LIMIT PRICE CALCULATION
+# ==============================================================================
+
+def calculate_follower_limit_price(master_order, offset, mode):
+    """
+    Compute the follower's limit price for a given order mode.
+
+    Offset is applied in the fill-favorable direction so a wider offset always
+    increases the chance of being filled:
+        - master is selling for premium (credit / sell side)  -> follower price = master - offset
+        - master is paying for the position (debit / buy side) -> follower price = master + offset
+
+    Args:
+        master_order: Master order dict (uses 'price', 'type', 'side', 'leg').
+        offset: Dollar offset (used only for ORDER_MODE_LIMIT_OFFSET).
+        mode: One of ORDER_MODE_MATCH_MASTER / ORDER_MODE_LIMIT_MATCH / ORDER_MODE_LIMIT_OFFSET.
+
+    Returns:
+        tuple: (limit_price, type_override).
+            - limit_price (float) or None if master has no price or mode is match_master.
+            - type_override (str) or None.
+              For multi-leg credit/debit orders the master's type is preserved.
+              For single-leg orders the type is forced to "limit".
+    """
+    if mode not in LIMIT_MODES:
+        return None, None
+
+    try:
+        master_price = float(master_order.get("price") or 0)
+    except (TypeError, ValueError):
+        master_price = 0
+
+    if not master_price:
+        return None, None
+
+    master_type = str(master_order.get("type") or "").lower()
+    side = str(master_order.get("side") or "").lower()
+
+    is_credit_side = (
+        master_type == "credit"
+        or (master_type != "debit" and "sell" in side)
+    )
+
+    if mode == ORDER_MODE_LIMIT_OFFSET:
+        try:
+            offset_val = float(offset or 0)
+        except (TypeError, ValueError):
+            offset_val = 0
+        if is_credit_side:
+            limit_price = master_price - offset_val
+        else:
+            limit_price = master_price + offset_val
+    else:
+        limit_price = master_price
+
+    if limit_price < MIN_LIMIT_PRICE:
+        limit_price = MIN_LIMIT_PRICE
+    limit_price = round(limit_price, 2)
+
+    is_multileg = bool(master_order.get("leg")) or master_type in ("credit", "debit")
+    if is_multileg:
+        type_override = master_type if master_type in ("credit", "debit") else "credit"
+    else:
+        type_override = "limit"
+
+    return limit_price, type_override
 
 
 # ==============================================================================
@@ -109,7 +182,7 @@ def get_new_master_orders(db, master_account):
 # ORDER RECONSTRUCTION
 # ==============================================================================
 
-def reconstruct_multileg_order(master_order, multiplier=1):
+def reconstruct_multileg_order(master_order, multiplier=1, order_mode=DEFAULT_ORDER_MODE, offset=0):
     """
     Reconstruct a multi-leg order from a master order for forwarding.
 
@@ -119,17 +192,25 @@ def reconstruct_multileg_order(master_order, multiplier=1):
     Args:
         master_order: Master order dictionary with 'leg' key
         multiplier: Quantity multiplier for follower
+        order_mode: Per-follower mode (match_master, limit_match, limit_offset)
+        offset: Dollar offset for ORDER_MODE_LIMIT_OFFSET
 
     Returns:
         dict: Form-encoded order data for Tradier API
     """
+    limit_price, type_override = calculate_follower_limit_price(master_order, offset, order_mode)
+    follower_type = type_override if type_override else "market"
+
     data = {
         "class": "multileg",
         "symbol": master_order.get("symbol", ""),
-        "type": "market",
+        "type": follower_type,
         "duration": master_order.get("duration", "day"),
         "tag": f"follower-{master_order.get('symbol', '')}-{master_order.get('id', 0)}",
     }
+
+    if limit_price is not None:
+        data["price"] = limit_price
 
     legs = master_order.get("leg", [])
     for i, leg in enumerate(legs):
@@ -141,13 +222,15 @@ def reconstruct_multileg_order(master_order, multiplier=1):
     return data
 
 
-def reconstruct_single_order(master_order, multiplier=1):
+def reconstruct_single_order(master_order, multiplier=1, order_mode=DEFAULT_ORDER_MODE, offset=0):
     """
     Reconstruct a single-leg (equity/option) order from a master order.
 
     Args:
         master_order: Master order dictionary
         multiplier: Quantity multiplier for follower
+        order_mode: Per-follower mode (match_master, limit_match, limit_offset)
+        offset: Dollar offset for ORDER_MODE_LIMIT_OFFSET
 
     Returns:
         dict: Form-encoded order data for Tradier API
@@ -155,7 +238,12 @@ def reconstruct_single_order(master_order, multiplier=1):
     order_class = master_order.get("class", "equity")
     raw_qty = int(master_order.get("quantity", 0)) * multiplier
     quantity = max(MIN_FOLLOWER_QTY, math.floor(raw_qty))
-    order_type = master_order.get("type", "market")
+
+    limit_price, type_override = calculate_follower_limit_price(master_order, offset, order_mode)
+    if limit_price is not None and type_override:
+        order_type = type_override
+    else:
+        order_type = master_order.get("type", "market")
 
     data = {
         "class": order_class,
@@ -167,7 +255,9 @@ def reconstruct_single_order(master_order, multiplier=1):
         "tag": f"follower-{master_order.get('symbol', '')}-{master_order.get('id', 0)}",
     }
 
-    if "limit" in order_type:
+    if limit_price is not None:
+        data["price"] = limit_price
+    elif "limit" in order_type:
         data["price"] = master_order.get("price", 0)
     if "stop" in order_type:
         data["stop"] = master_order.get("stop", 0)
@@ -187,7 +277,9 @@ def forward_order_to_follower(db, master_order, follower, order_data, settings, 
     """
     Forward an order to a single follower account.
 
-    Checks automation, dedup, stale timeout, then posts order.
+    Checks automation, dedup, stale timeout, then posts order. Followers in a
+    limit order mode bypass the stale-timeout skip so their limit can sit in the
+    book through the session.
 
     Args:
         db: MongoDB database connection
@@ -204,10 +296,11 @@ def forward_order_to_follower(db, master_order, follower, order_data, settings, 
     alias = follower.get("alias", act_nbr)
     order_id = master_order.get("id", 0)
     now = dt.datetime.now(tz=market_timezone)
+    follower_mode = follower.get("order_mode", DEFAULT_ORDER_MODE)
 
-    # Check stale timeout
+    # Check stale timeout (skipped for limit-mode followers — their limit is allowed to sit)
     create_date_str = master_order.get("create_date", "")
-    if create_date_str:
+    if create_date_str and follower_mode not in LIMIT_MODES:
         try:
             create_date = dt.datetime.fromisoformat(str(create_date_str).replace("Z", "+00:00"))
             if create_date.tzinfo is None:
@@ -250,9 +343,14 @@ def forward_order_to_follower(db, master_order, follower, order_data, settings, 
         result_order = result.get("order", result)
         result_id = result_order.get("id", "?")
         result_status = result_order.get("status", "?")
+        limit_suffix = (
+            f", limit={order_data.get('price')}"
+            if follower_mode in LIMIT_MODES and order_data.get("price") is not None
+            else ""
+        )
         print_store(db, master_username,
             f"Info: Follower '{alias}': order placed — id={result_id}, status={result_status}, "
-            f"master_order={order_id}")
+            f"master_order={order_id}, mode={follower_mode}{limit_suffix}")
     else:
         print_store(db, master_username,
             f"Error: Follower '{alias}': order failed for master order {order_id}, result={result}")
@@ -360,18 +458,22 @@ def check_master_modifications(db, master_orders, followers, settings):
 
     For modifiable fields (price, stop, duration, type): uses PUT to modify.
     For quantity changes: cancels and replaces the follower order.
+    For limit-mode followers, master price changes are re-mapped through the
+    offset before being sent to the follower.
 
     Args:
         db: MongoDB database connection
         master_orders: Pre-fetched list of current master orders
         followers: List of follower account documents
-        settings: Global settings dict (for multipliers)
+        settings: Global settings dict (for multipliers and limit_offset)
     """
     master_orders_by_id = {o.get("id"): o for o in master_orders}
+    offset = settings.get("limit_offset", DEFAULT_LIMIT_OFFSET)
 
     for follower in followers:
         act_nbr = follower.get("account_number", "")
         alias = follower.get("alias", act_nbr)
+        follower_mode = follower.get("order_mode", DEFAULT_ORDER_MODE)
         follower_filters = {"account_number": act_nbr}
 
         account_trades = db.get_collection("trades").find_one(filter=follower_filters)
@@ -404,6 +506,17 @@ def check_master_modifications(db, master_orders, followers, settings):
                 snapshot_val = master_snapshot.get(field)
                 if current_val != snapshot_val and current_val is not None:
                     modify_data[field] = current_val
+
+            # If follower is in a limit mode and master price changed, re-map the price
+            # through the offset so the follower's limit stays at master ± offset.
+            if "price" in modify_data and follower_mode in LIMIT_MODES:
+                follower_limit, type_override = calculate_follower_limit_price(
+                    current_master, offset, follower_mode,
+                )
+                if follower_limit is not None:
+                    modify_data["price"] = follower_limit
+                    if type_override:
+                        modify_data["type"] = type_override
 
             # Check quantity (requires cancel+replace)
             quantity_changed = False
@@ -493,11 +606,13 @@ def _cancel_and_replace(db, trade, current_master, follower, settings, trade_ind
 
     # Reconstruct from current master state
     multiplier = float(settings.get("multipliers", {}).get(act_nbr, 1))
+    follower_mode = follower.get("order_mode", DEFAULT_ORDER_MODE)
+    offset = settings.get("limit_offset", DEFAULT_LIMIT_OFFSET)
     legs = current_master.get("leg", [])
     if legs:
-        order_data = reconstruct_multileg_order(current_master, multiplier)
+        order_data = reconstruct_multileg_order(current_master, multiplier, follower_mode, offset)
     else:
-        order_data = reconstruct_single_order(current_master, multiplier)
+        order_data = reconstruct_single_order(current_master, multiplier, follower_mode, offset)
 
     # Post new order
     result = post_orders_trd(
@@ -574,6 +689,9 @@ def check_stale_orders(db, all_accounts, stale_timeout):
     """
     Find and cancel open orders older than the stale timeout.
 
+    Followers configured with a limit order mode are skipped — their orders are
+    intended to sit in the book until they fill or expire at end of day.
+
     Args:
         db: MongoDB database connection
         all_accounts: List of all account documents
@@ -582,6 +700,12 @@ def check_stale_orders(db, all_accounts, stale_timeout):
     now = dt.datetime.now(tz=market_timezone)
 
     for account in all_accounts:
+        # Skip limit-mode followers; the master always retains stale handling.
+        if not account.get("is_master", False):
+            account_mode = account.get("order_mode", DEFAULT_ORDER_MODE)
+            if account_mode in LIMIT_MODES:
+                continue
+
         act_nbr = account.get("account_number", "")
         alias = account.get("alias", act_nbr)
 
@@ -771,18 +895,20 @@ def run_copy_cycle(db, recent_log_list):
                 )
 
                 # Forward to each follower
+                offset = settings.get("limit_offset", DEFAULT_LIMIT_OFFSET)
                 for follower in followers:
                     act_nbr = follower.get("account_number", "")
                     alias = follower.get("alias", act_nbr)
                     multiplier = float(settings.get("multipliers", {}).get(act_nbr, 1))
+                    follower_mode = follower.get("order_mode", DEFAULT_ORDER_MODE)
                     master_qty = int(order.get("quantity", 0))
                     follower_qty = max(MIN_FOLLOWER_QTY, math.floor(master_qty * multiplier))
-                    print(f"Follower '{alias}': master_qty={master_qty} x multiplier={multiplier} = {master_qty * multiplier} -> floor={follower_qty}")
+                    print(f"Follower '{alias}': master_qty={master_qty} x multiplier={multiplier} = {master_qty * multiplier} -> floor={follower_qty} mode={follower_mode}")
 
                     if legs:
-                        order_data = reconstruct_multileg_order(order, multiplier)
+                        order_data = reconstruct_multileg_order(order, multiplier, follower_mode, offset)
                     else:
-                        order_data = reconstruct_single_order(order, multiplier)
+                        order_data = reconstruct_single_order(order, multiplier, follower_mode, offset)
 
                     forward_order_to_follower(db, order, follower, order_data, settings, recent_log_list)
 

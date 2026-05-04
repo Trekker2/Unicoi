@@ -125,6 +125,25 @@ MAX_ERRORS = 50
 MIN_FOLLOWER_QTY = 1
 
 # ==============================================================================
+# ORDER MODE CONFIGURATION
+# ==============================================================================
+
+ORDER_MODE_MATCH_MASTER = "match_master"
+ORDER_MODE_LIMIT_MATCH = "limit_match"
+ORDER_MODE_LIMIT_OFFSET = "limit_offset"
+
+ORDER_MODES = [
+    {"value": ORDER_MODE_MATCH_MASTER, "label": "Match Master"},
+    {"value": ORDER_MODE_LIMIT_MATCH, "label": "Limit at Master Price"},
+    {"value": ORDER_MODE_LIMIT_OFFSET, "label": "Limit with Offset"},
+]
+
+LIMIT_MODES = {ORDER_MODE_LIMIT_MATCH, ORDER_MODE_LIMIT_OFFSET}
+DEFAULT_ORDER_MODE = ORDER_MODE_MATCH_MASTER
+DEFAULT_LIMIT_OFFSET = 0.05
+MIN_LIMIT_PRICE = 0.01
+
+# ==============================================================================
 # ORDER STATUS CLASSIFICATIONS
 # ==============================================================================
 
@@ -212,6 +231,7 @@ def get_default_settings():
         "color_mode": "Dark",
         "use_streaming": False,
         "multipliers": {},
+        "limit_offset": DEFAULT_LIMIT_OFFSET,
     }
 
 # END

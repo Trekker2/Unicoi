@@ -14,13 +14,14 @@ Page Layout:
     |  | 🤖 Enable Automation          [on/off]  (master killswitch) ||
     |  | 📡 Use Streaming              [on/off]  (WebSocket mode)    ||
     |  | Poll Interval (sec)           [___5__]  (hidden if streaming)||
-    |  | Stale Timeout (min)           [___2__]                       ||
+    |  | Stale Timeout (min)           [___2__]  (limit-mode bypass) ||
+    |  | Limit Offset ($)              [_0.05_]  (Limit with Offset) ||
     |  +--------------------------------------------------------------+|
     |                                                                  |
     |  [Per-Account Multipliers Card]                                  |
     |  +--------------------------------------------------------------+|
-    |  | Follower 1 (VA442...)          [__1.00__]                    ||
-    |  | Follower 2 (VA553...)          [__0.50__]                    ||
+    |  | Follower 1 (6YB44...)          [__1.00__]                    ||
+    |  | Follower 2 (6YB55...)          [__0.50__]                    ||
     |  +--------------------------------------------------------------+|
     |                                                                  |
     |  [Display Card]                                                  |
@@ -34,7 +35,12 @@ Page Layout:
 Key Features:
     - Master killswitch for copy engine with confirmation modal
     - Streaming toggle (WebSocket vs polling mode)
-    - Configurable poll interval and stale order timeout
+    - Configurable poll interval and stale order timeout (timeout bypassed for
+      followers running a limit order mode)
+    - Limit Offset (dollars) input for accounts in 'Limit with Offset' mode;
+      the follower's limit lands at master price ± offset in the
+      fill-favorable direction (master − offset for credit/sell, master +
+      offset for debit/buy)
     - Per-follower quantity multipliers (0-100x, 0.01 step)
     - Dark/Light color mode segmented control
     - Alert container for save feedback
@@ -127,11 +133,24 @@ def serve_settings(color_mode="Dark"):
             dmc.NumberInput(
                 id="settings-stale-timeout",
                 label="Stale Timeout (minutes)",
-                description="Skip copying orders older than this",
+                description="Skip copying orders older than this (bypassed for limit-mode followers)",
                 value=settings.get("stale_timeout", DEFAULT_STALE_TIMEOUT),
                 min=1,
                 max=60,
                 leftSection=DashIconify(icon="mdi:clock-alert-outline", width=20),
+                styles=input_styles,
+                style={"marginBottom": "1.5rem", "maxWidth": "300px"},
+            ),
+            # Limit offset
+            dmc.NumberInput(
+                id="settings-limit-offset",
+                label="Limit Offset (dollars)",
+                description="Used by 'Limit with Offset' mode — applied master ± offset in fill-favorable direction",
+                value=settings.get("limit_offset", DEFAULT_LIMIT_OFFSET),
+                min=0,
+                step=0.01,
+                decimalScale=2,
+                leftSection=DashIconify(icon="mdi:currency-usd", width=20),
                 styles=input_styles,
                 style={"maxWidth": "300px"},
             ),
@@ -235,7 +254,8 @@ def serve_settings(color_mode="Dark"):
                         "Enable Automation -- master killswitch to start or stop the copy engine (requires confirmation)",
                         "Use Streaming -- toggle WebSocket streaming for instant order detection vs polling fallback",
                         "Poll Interval (seconds) -- how often to check for new master orders (hidden when streaming is on)",
-                        "Stale Timeout (minutes) -- skip copying orders older than this threshold",
+                        "Stale Timeout (minutes) -- skip copying orders older than this threshold (bypassed for limit-mode followers)",
+                        "Limit Offset (dollars) -- offset applied for accounts in 'Limit with Offset' mode; the follower's limit is master ± offset in the fill-favorable direction",
                     ]},
                     {"Per-Account Multipliers": [
                         "Each follower account has a quantity multiplier (0 to 100x, 0.01 step)",

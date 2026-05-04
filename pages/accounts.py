@@ -6,28 +6,30 @@ accounts, designate a master account for trade copying, add new accounts
 via API key, and remove accounts with confirmation.
 
 Page Layout:
-    +------------------------------------------------------------------+
-    |                        💼 Accounts                               |
-    |------------------------------------------------------------------|
-    |  [Connected Accounts Card]                                       |
-    |  +--------------------------------------------------------------+|
-    |  | Alias | Account # | API Key (masked) | Master ◉ | Delete 🗑 ||
-    |  |-------|-----------|------------------|----------|------------||
-    |  | Joe   | VA231...  | 9i7X***          |  [on]    |   [x]     ||
-    |  | Acct2 | VA442...  | kR4z***          |  [off]   |   [x]     ||
-    |  +--------------------------------------------------------------+|
-    |                                                                  |
-    |  [Add Account Card]                                              |
-    |  +--------------------------------------------------------------+|
-    |  | Alias [________]  Account # [________]  API Key [________]   ||
-    |  |                                      [➕ Add Account]        ||
-    |  +--------------------------------------------------------------+|
-    |                                                                  |
-    |  (Delete Account Confirmation Modal - hidden until triggered)    |
-    +------------------------------------------------------------------+
+    +-----------------------------------------------------------------------+
+    |                        💼 Accounts                                    |
+    |-----------------------------------------------------------------------|
+    |  [Connected Accounts Card]                                            |
+    |  +-----------------------------------------------------------------+ |
+    |  | Alias | Account # | API Key | Order Type     | Master ◉ | Delete | |
+    |  |-------|-----------|---------|----------------|----------|--------| |
+    |  | Joe   | 6YB72...  | 9i7X*** |     —          |  [on]    |  [x]   | |
+    |  | Acct2 | 6YB74...  | kR4z*** | Match Master ▾ |  [off]   |  [x]   | |
+    |  +-----------------------------------------------------------------+ |
+    |                                                                       |
+    |  [Add Account Card]                                                   |
+    |  +-----------------------------------------------------------------+ |
+    |  | Alias [________]  Account # [________]  API Key [________]      | |
+    |  |                                              [➕ Add Account]   | |
+    |  +-----------------------------------------------------------------+ |
+    |                                                                       |
+    |  (Delete Account Confirmation Modal - hidden until triggered)         |
+    +-----------------------------------------------------------------------+
 
 Key Features:
     - Accounts table with masked API keys for security
+    - Per-follower Order Type dropdown: Match Master / Limit at Master Price /
+      Limit with Offset (master row shows "—" since order_mode is N/A there)
     - Master account toggle switch (grape-colored, one active at a time)
     - Add account form with alias, account number, and API key fields
     - Delete account with modal confirmation dialog
@@ -77,12 +79,30 @@ def serve_accounts(color_mode="Dark"):
         alias = account.get("alias", "")
         api_key = account.get("api_key", "")
         is_master = account.get("is_master", False)
+        order_mode = account.get("order_mode", DEFAULT_ORDER_MODE)
+
+        if is_master:
+            order_mode_cell = html.Span(
+                "—",
+                style={"color": theme["text_secondary"]},
+            )
+        else:
+            order_mode_cell = dmc.Select(
+                id={"type": "account-order-mode", "index": act_nbr},
+                data=ORDER_MODES,
+                value=order_mode,
+                size="xs",
+                styles=input_styles,
+                allowDeselect=False,
+                clearable=False,
+            )
 
         row = html.Tr(
             children=[
                 html.Td(alias, style={"color": theme["text_primary"]}),
                 html.Td(act_nbr, style={"color": theme["text_primary"]}),
                 html.Td(hide_text(api_key), style={"color": theme["text_secondary"]}),
+                html.Td(order_mode_cell, style={"textAlign": "center", "minWidth": "200px"}),
                 html.Td(
                     dmc.Switch(
                         id={"type": "master-radio", "index": act_nbr},
@@ -114,6 +134,7 @@ def serve_accounts(color_mode="Dark"):
             html.Th("Alias", style=th_style),
             html.Th("Account #", style=th_style),
             html.Th("API Key", style=th_style),
+            html.Th("Order Type", style={**th_style, "textAlign": "center"}),
             html.Th("Master", style={**th_style, "textAlign": "center"}),
             html.Th("Delete", style={**th_style, "textAlign": "center"}),
         ]),
@@ -198,6 +219,7 @@ def serve_accounts(color_mode="Dark"):
                         "Alias -- friendly name for the account",
                         "Account # -- Tradier brokerage account number",
                         "API Key -- masked Tradier API key for security",
+                        "Order Type -- per-follower copy mode (Match Master / Limit at Master Price / Limit with Offset). Master account shows '—'.",
                         "Master -- toggle switch to designate the master account (only one active at a time)",
                         "Delete -- remove an account with confirmation dialog",
                     ]},

@@ -31,7 +31,7 @@ from helper import verify_password
 from pages import *
 from scripts.database_manager import connect_mongo, print_store
 from scripts.style_manager import *
-from services.accounts_service import do_post_account, do_delete_account, do_set_master
+from services.accounts_service import do_post_account, do_delete_account, do_set_master, do_set_account_order_mode
 from services.orders_service import do_delete_order
 from integrations.tradier_ import get_orders_trd
 from services.settings_service import do_put_setting
@@ -305,6 +305,40 @@ def register_app_callbacks(app):
             return create_success_alert(message), "/accounts"
         return create_error_alert(message), no_update
 
+    @app.callback(
+        Output('accounts-alert', 'children', allow_duplicate=True),
+        Input({"type": "account-order-mode", "index": ALL}, "value"),
+        State({"type": "account-order-mode", "index": ALL}, "id"),
+        prevent_initial_call=True,
+    )
+    def handle_account_order_mode(values, ids):
+        """Handle per-account Order Type dropdown change."""
+        ctx = callback_context
+        if not ctx.triggered:
+            return no_update
+
+        trigger = ctx.triggered[0]
+        new_value = trigger["value"]
+        if new_value is None:
+            return no_update
+
+        prop_id = json.loads(trigger["prop_id"].split(".")[0])
+        account_number = prop_id["index"]
+
+        db = connect_mongo()
+        existing = db.get_collection("accounts").find_one({"account_number": account_number})
+        if existing and existing.get("order_mode", DEFAULT_ORDER_MODE) == new_value:
+            return no_update
+
+        success, message = do_set_account_order_mode(account_number, new_value)
+        username = current_user.username if current_user.is_authenticated else ""
+        if success:
+            label = next((m["label"] for m in ORDER_MODES if m["value"] == new_value), new_value)
+            print_store(db, username,
+                f"Info: [{username}] Set order mode for {account_number} to '{new_value}'")
+            return create_success_alert(f"Order Type for {account_number} set to '{label}'")
+        return create_error_alert(message)
+
     # ==================================================================
     # SETTINGS
     # ==================================================================
@@ -403,6 +437,22 @@ def register_app_callbacks(app):
             print_store(db, username, f"Info: [{username}] Updated setting 'stale_timeout' to '{int(value)}'")
             return create_success_alert(f"Stale timeout set to {value} min")
         return no_update
+
+    @app.callback(
+        Output('settings-alert', 'children', allow_duplicate=True),
+        Input('settings-limit-offset', 'value'),
+        prevent_initial_call=True,
+    )
+    def handle_limit_offset(value):
+        """Handle limit offset change."""
+        if value is None or value < 0:
+            return no_update
+        offset = round(float(value), 2)
+        do_put_setting("limit_offset", offset)
+        db = connect_mongo()
+        username = current_user.username if current_user.is_authenticated else ""
+        print_store(db, username, f"Info: [{username}] Updated setting 'limit_offset' to '{offset}'")
+        return create_success_alert(f"Limit offset set to ${offset:.2f}")
 
     @app.callback(
         Output('settings-alert', 'children', allow_duplicate=True),
