@@ -40,7 +40,7 @@ The Tradier Copy Bot is an automated trade replication system built with Python 
 - 🌙 **Dark/Light Mode** - Tradier purple-themed dashboard with dark/light toggle via MantineProvider
 - 📋 **Activity Logging** - All operations logged with Info/Warning/Error prefixes, Master/Follower labels, mode + limit price per copied order, CSV export
 - 🔒 **Authentication** - Flask-Login with bcrypt password hashing and session management
-- 🧪 **192+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
+- 🧪 **197+ Tests** - Comprehensive coverage across unit tests, integration scenarios, and live sandbox tests
 
 ---
 
@@ -319,7 +319,7 @@ tradier-copy-bot/
 │   ├── __init__.py                    # Cron module exports
 │   └── cron_daily.py                  # Daily cleanup (logs, history, orphans, indexes)
 ├── 📦 client_resources/               # Client-facing documents and resources
-└── 🧪 tests/                          # Comprehensive test suite (192+ tests)
+└── 🧪 tests/                          # Comprehensive test suite (197+ tests)
     ├── __init__.py                    # Test module initialization
     ├── run_all_tests.py               # Master test runner (unit + scenarios + live)
     ├── scenario_runner.py             # YAML-based integration scenario runner
@@ -1570,7 +1570,7 @@ python -m tests.live_test_runner --cleanup      # Cancel leftover test orders
 </details>
 
 <details>
-<summary><strong>🧩 Unit Tests — 192 tests</strong></summary>
+<summary><strong>🧩 Unit Tests — 197 tests</strong></summary>
 
 <div style="padding-left: 20px;">
 
@@ -1580,10 +1580,10 @@ python -m tests.live_test_runner --cleanup      # Cancel leftover test orders
 | `test_constants.py` | 31 | Default settings (incl. `limit_offset`), status classifications (bad, open, closed, filled, good), side classifications (long, short, inverse), navbar config, environment detection |
 | `test_database_manager.py` | 18 | `serialize_for_mongo()` (UUID, Enum, Decimal, nested objects), `store_log_db()`, `print_store()`, `cleanup_old_data()`, connection pool behavior |
 | `test_copy_manager.py` | 64 | `calculate_follower_limit_price()`, `reconstruct_single_order()` / `reconstruct_multileg_order()` under all three order modes, `run_copy_cycle()`, `forward_order_to_follower()` (including null-trade guard, mode/limit logging, stale-skip for limit-mode), `check_master_cancellations()`, `check_master_modifications()` (incl. offset re-apply on master price change), `check_stale_orders()` (incl. limit-mode skip), dedup logic, multiplier scaling |
-| `test_services.py` | 24 | `do_get_settings()`, `do_put_setting()`, `do_get_accounts()`, `do_post_account()`, `do_delete_account()`, `do_set_master()`, `do_get_orders()`, `do_get_positions()`, `do_get_logs()` |
+| `test_services.py` | 29 | `do_get_settings()`, `do_put_setting()`, `do_get_accounts()`, `do_post_account()`, `do_delete_account()`, `do_set_master()`, `do_get_orders()`, `do_get_positions()`, `do_get_logs()`, `get_display_price()` (fill-price-vs-limit fallback) |
 | `test_cron_daily.py` | 15 | Log cleanup (16h retention), history cleanup (90d retention), orphan removal (accounts/history/logs), index verification, health check |
 
-**Total: 181 unit tests + 11 sandbox API tests = 192 tests**
+**Total: 186 unit tests + 11 sandbox API tests = 197 tests**
 
 </div>
 </details>

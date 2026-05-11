@@ -34,7 +34,7 @@ Key Features:
     - Skeleton loading for instant page render before API calls complete
     - Per-account sections with master badge indicator
     - Account column on each row for easy identification
-    - Price column falls back to average fill price when limit price is empty
+    - Price column shows the realized fill price for filled orders, limit price for open/canceled
     - Filled (ET) column shows fill timestamp once the order fills
     - Timestamps converted from UTC to Eastern time (ET suffix)
     - Export CSV button downloads all orders across accounts
@@ -69,7 +69,7 @@ import dash_mantine_components as dmc
 
 from constants import *
 from scripts.style_manager import *
-from services.orders_service import do_get_orders
+from services.orders_service import do_get_orders, get_display_price
 
 
 # ==============================================================================
@@ -179,7 +179,7 @@ def update_orders(color_mode="Dark"):
                     html.Td(dmc.Badge(status, color=badge_color, variant="filled", size="sm"),
                             style={"minWidth": "90px"}),
                     html.Td(order.get("type", ""), style={"color": "var(--text-secondary)"}),
-                    html.Td(str(order.get("price") or order.get("avg_fill_price") or order.get("last_fill_price") or ""), style={"color": "var(--text-primary)"}),
+                    html.Td(str(get_display_price(order)), style={"color": "var(--text-primary)"}),
                     html.Td(_format_eastern(order.get("create_date", "")), style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
                     html.Td(_format_eastern(order.get("transaction_date", "")), style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
                     html.Td(order.get("tag", ""), style={"color": "var(--text-secondary)", "maxWidth": "140px",
@@ -292,7 +292,7 @@ def serve_orders(color_mode="Dark"):
                         "Qty -- order quantity",
                         "Status -- color-coded badge (green=filled, blue=open, red=rejected/canceled, gray=other)",
                         "Type -- order type (market, limit, stop, etc.)",
-                        "Price -- limit/stop price; falls back to average fill price after the order fills",
+                        "Price -- average fill price once the order fills; falls back to the limit/stop price while still open",
                         "Created -- order creation timestamp in Eastern time",
                         "Filled -- order fill timestamp in Eastern time (blank until filled)",
                         "Tag -- order tag label if present",

@@ -6,6 +6,7 @@ Abstracts API calls for order management.
 Key Functions:
     - do_get_orders: Get live orders across all accounts
     - do_delete_order: Cancel an order
+    - get_display_price: Resolve the price to show in the Orders table
 """
 
 # ==============================================================================
@@ -14,6 +15,27 @@ Key Functions:
 
 from scripts.database_manager import connect_mongo
 from integrations.tradier_ import get_orders_trd, delete_orders_trd
+
+
+# ==============================================================================
+# HELPERS
+# ==============================================================================
+
+def get_display_price(order):
+    """
+    Resolve the price to show in the Orders table for a given order.
+
+    Prefer the realized fill price (average, then last partial) so a filled
+    limit order shows the actual fill the broker recorded -- not the original
+    limit. Falls back to the limit price for orders that have not filled yet
+    (open, canceled, rejected).
+    """
+    for candidate in (order.get("avg_fill_price"),
+                      order.get("last_fill_price"),
+                      order.get("price")):
+        if candidate:
+            return candidate
+    return ""
 
 
 # ==============================================================================

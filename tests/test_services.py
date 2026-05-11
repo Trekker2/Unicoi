@@ -313,7 +313,38 @@ class TestAccountsService(unittest.TestCase):
 # ==============================================================================
 
 class TestOrdersService(unittest.TestCase):
-    """Tests for orders_service -- 3 tests."""
+    """Tests for orders_service -- 8 tests."""
+
+    def test_display_price_prefers_avg_fill_when_filled(self):
+        """A filled limit order should show the average fill, not the limit, so the
+        dashboard matches what the broker shows for offset-mode followers."""
+        from services.orders_service import get_display_price
+        order = {"price": 0.55, "avg_fill_price": 0.64, "status": "filled"}
+        self.assertEqual(get_display_price(order), 0.64)
+
+    def test_display_price_falls_back_to_limit_when_open(self):
+        """An open limit order with no fill yet should show the limit price."""
+        from services.orders_service import get_display_price
+        order = {"price": 0.55, "avg_fill_price": 0.0, "status": "open"}
+        self.assertEqual(get_display_price(order), 0.55)
+
+    def test_display_price_uses_last_fill_when_partial(self):
+        """A partial fill with no avg yet should still surface a fill price."""
+        from services.orders_service import get_display_price
+        order = {"price": 0.55, "avg_fill_price": 0.0, "last_fill_price": 0.63}
+        self.assertEqual(get_display_price(order), 0.63)
+
+    def test_display_price_market_order_uses_fill(self):
+        """A market order has no limit; the column should show the actual fill."""
+        from services.orders_service import get_display_price
+        order = {"price": 0.0, "avg_fill_price": 0.64, "status": "filled"}
+        self.assertEqual(get_display_price(order), 0.64)
+
+    def test_display_price_empty_when_nothing_set(self):
+        """An order with no usable prices should return an empty string."""
+        from services.orders_service import get_display_price
+        self.assertEqual(get_display_price({}), "")
+
 
     @classmethod
     def setUpClass(cls):
