@@ -28,7 +28,7 @@ The Tradier Copy Bot is an automated trade replication system built with Python 
 - 🔄 **Order Copying** - Detects new orders on master and copies them to all follower accounts automatically
 - 📊 **Multi-Leg Support** - Copies single-leg equities/options and multi-leg spreads using Tradier indexed notation
 - ✖️ **Per-Account Multipliers** - Scale order quantities per follower account (e.g., 0.5x, 1x, 2x, 5x)
-- 🎯 **Per-Account Order Type** - Each follower runs in `Match Master` (market, today's behavior), `Limit at Master Price`, or `Limit with Offset` mode
+- 🎯 **Per-Account Order Type** - Each follower runs in `Market at Master Price` (market order, default), `Limit at Master Price`, or `Limit with Offset` mode
 - 💲 **Limit Offset** - Global dollar offset applied in the fill-favorable direction (master − offset for credit/sell, master + offset for debit/buy) for accounts in `Limit with Offset` mode
 - 🔧 **Modification Sync** - Detects modified master orders and syncs price/stop/duration changes to followers via PUT (offset re-applied for limit-mode followers); quantity changes trigger cancel + replace
 - ❌ **Cancellation Sync** - Detects canceled master orders and automatically syncs cancellations to all followers
@@ -1078,7 +1078,7 @@ Manages connected Tradier brokerage accounts. Users can view all linked accounts
 | Alias | Friendly display name for the account |
 | Account # | Tradier account number (e.g., VA231...) |
 | API Key | Masked with asterisks for security (`hide_text()`) |
-| Order Type | Per-follower copy mode: `Match Master` (today's behavior, market orders), `Limit at Master Price`, or `Limit with Offset` (master ± offset). Master row shows `—`. |
+| Order Type | Per-follower copy mode: `Market at Master Price` (default, market orders), `Limit at Master Price`, or `Limit with Offset` (master ± offset). Master row shows `—`. |
 | Master | Toggle switch (grape-colored, only one active at a time) |
 | Delete | Delete button with confirmation modal |
 

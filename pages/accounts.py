@@ -14,7 +14,7 @@ Page Layout:
     |  | Alias | Account # | API Key | Order Type     | Master ◉ | Delete | |
     |  |-------|-----------|---------|----------------|----------|--------| |
     |  | Joe   | 6YB72...  | 9i7X*** |     —          |  [on]    |  [x]   | |
-    |  | Acct2 | 6YB74...  | kR4z*** | Match Master ▾ |  [off]   |  [x]   | |
+    |  | Acct2 | 6YB74...  | kR4z*** | Market at Master Price ▾ | [off] | [x] | |
     |  +-----------------------------------------------------------------+ |
     |                                                                       |
     |  [Add Account Card]                                                   |
@@ -28,8 +28,8 @@ Page Layout:
 
 Key Features:
     - Accounts table with masked API keys for security
-    - Per-follower Order Type dropdown: Match Master / Limit at Master Price /
-      Limit with Offset (master row shows "—" since order_mode is N/A there)
+    - Per-follower Order Type dropdown: Market at Master Price / Limit at Master
+      Price / Limit with Offset (master row shows "—" since order_mode is N/A there)
     - Master account toggle switch (grape-colored, one active at a time)
     - Add account form with alias, account number, and API key fields
     - Delete account with modal confirmation dialog
@@ -70,6 +70,7 @@ def serve_accounts(color_mode="Dark"):
     """
     theme = get_theme_colors(color_mode)
     input_styles = get_input_styles(color_mode)
+    select_styles = get_select_styles(color_mode)
     accounts = do_get_accounts()
 
     # Build accounts table rows
@@ -92,7 +93,7 @@ def serve_accounts(color_mode="Dark"):
                 data=ORDER_MODES,
                 value=order_mode,
                 size="xs",
-                styles=input_styles,
+                styles=select_styles,
                 allowDeselect=False,
                 clearable=False,
             )
@@ -219,7 +220,7 @@ def serve_accounts(color_mode="Dark"):
                         "Alias -- friendly name for the account",
                         "Account # -- Tradier brokerage account number",
                         "API Key -- masked Tradier API key for security",
-                        "Order Type -- per-follower copy mode (Match Master / Limit at Master Price / Limit with Offset). Master account shows '—'.",
+                        "Order Type -- per-follower copy mode (Market at Master Price / Limit at Master Price / Limit with Offset). Master account shows '—'.",
                         "Master -- toggle switch to designate the master account (only one active at a time)",
                         "Delete -- remove an account with confirmation dialog",
                     ]},

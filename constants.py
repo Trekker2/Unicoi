@@ -133,7 +133,7 @@ ORDER_MODE_LIMIT_MATCH = "limit_match"
 ORDER_MODE_LIMIT_OFFSET = "limit_offset"
 
 ORDER_MODES = [
-    {"value": ORDER_MODE_MATCH_MASTER, "label": "Match Master"},
+    {"value": ORDER_MODE_MATCH_MASTER, "label": "Market at Master Price"},
     {"value": ORDER_MODE_LIMIT_MATCH, "label": "Limit at Master Price"},
     {"value": ORDER_MODE_LIMIT_OFFSET, "label": "Limit with Offset"},
 ]
