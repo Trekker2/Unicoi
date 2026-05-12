@@ -25,17 +25,25 @@ def get_display_price(order):
     """
     Resolve the price to show in the Orders table for a given order.
 
-    Prefer the realized fill price (average, then last partial) so a filled
-    limit order shows the actual fill the broker recorded -- not the original
-    limit. Falls back to the limit price for orders that have not filled yet
-    (open, canceled, rejected).
+    Returns (value, is_fill):
+        value   -- the price to display, or "" when no usable price exists
+        is_fill -- True when the displayed value is a realized fill price
+                   (average or last partial), False when it is the limit
+                   price shown while the order is still open / canceled /
+                   rejected. The Orders page uses this flag to render limit
+                   prices in muted italic so the reader can tell at a glance
+                   whether the cell is a fill or a still-pending limit.
     """
-    for candidate in (order.get("avg_fill_price"),
-                      order.get("last_fill_price"),
-                      order.get("price")):
-        if candidate:
-            return candidate
-    return ""
+    avg = order.get("avg_fill_price")
+    if avg:
+        return avg, True
+    last = order.get("last_fill_price")
+    if last:
+        return last, True
+    limit = order.get("price")
+    if limit:
+        return limit, False
+    return "", False
 
 
 # ==============================================================================

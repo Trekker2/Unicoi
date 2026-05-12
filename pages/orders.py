@@ -34,7 +34,7 @@ Key Features:
     - Skeleton loading for instant page render before API calls complete
     - Per-account sections with master badge indicator
     - Account column on each row for easy identification
-    - Price column shows the realized fill price for filled orders, limit price for open/canceled
+    - Price column shows realized fill price (normal text) or limit price (muted italic) so the reader can tell which
     - Filled (ET) column shows fill timestamp once the order fills
     - Timestamps converted from UTC to Eastern time (ET suffix)
     - Export CSV button downloads all orders across accounts
@@ -75,6 +75,18 @@ from services.orders_service import do_get_orders, get_display_price
 # ==============================================================================
 # HELPERS
 # ==============================================================================
+
+def _price_cell(order):
+    """Render the Price column cell: bold for realized fills, muted italic for limits."""
+    value, is_fill = get_display_price(order)
+    if value == "":
+        return html.Td("", style={"color": "var(--text-primary)"})
+    if is_fill:
+        style = {"color": "var(--text-primary)"}
+    else:
+        style = {"color": "var(--text-secondary)", "fontStyle": "italic"}
+    return html.Td(str(value), style=style)
+
 
 def _format_eastern(date_str):
     """Convert a UTC date string from Tradier to Eastern time for display."""
@@ -179,7 +191,7 @@ def update_orders(color_mode="Dark"):
                     html.Td(dmc.Badge(status, color=badge_color, variant="filled", size="sm"),
                             style={"minWidth": "90px"}),
                     html.Td(order.get("type", ""), style={"color": "var(--text-secondary)"}),
-                    html.Td(str(get_display_price(order)), style={"color": "var(--text-primary)"}),
+                    _price_cell(order),
                     html.Td(_format_eastern(order.get("create_date", "")), style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
                     html.Td(_format_eastern(order.get("transaction_date", "")), style={"color": "var(--text-secondary)", "whiteSpace": "nowrap"}),
                     html.Td(order.get("tag", ""), style={"color": "var(--text-secondary)", "maxWidth": "140px",
@@ -292,7 +304,7 @@ def serve_orders(color_mode="Dark"):
                         "Qty -- order quantity",
                         "Status -- color-coded badge (green=filled, blue=open, red=rejected/canceled, gray=other)",
                         "Type -- order type (market, limit, stop, etc.)",
-                        "Price -- average fill price once the order fills; falls back to the limit/stop price while still open",
+                        "Price -- average fill price once the order fills (normal text); limit/stop price while still open or canceled (muted italic)",
                         "Created -- order creation timestamp in Eastern time",
                         "Filled -- order fill timestamp in Eastern time (blank until filled)",
                         "Tag -- order tag label if present",
