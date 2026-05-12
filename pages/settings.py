@@ -44,6 +44,8 @@ Key Features:
     - Per-follower quantity multipliers (0-100x, 0.01 step)
     - Dark/Light color mode segmented control
     - Alert container for save feedback
+    - Emergency Shutdown Checklist in the About accordion (6 steps from
+      automation OFF through full Heroku app deletion)
 
 Functions:
     - serve_settings(color_mode) : Build and return the full page layout
@@ -264,6 +266,14 @@ def serve_settings(color_mode="Dark"):
                     ]},
                     {"Display": [
                         "Color Mode -- toggle between Dark and Light theme across the entire dashboard",
+                    ]},
+                    {"Emergency Shutdown Checklist": [
+                        "1. Turn off the Enable Automation toggle (above) -- stops new copies immediately; existing open orders are left alone",
+                        "2. Contact developer (see footer for contact info) for help with anything below",
+                        "3. Remove follower accounts on the Accounts page -- the trash icon takes each account out of the copy rotation immediately; note that lowering a multiplier to 0 does NOT stop copies (the 1-contract floor still applies), so removing the account is the right move",
+                        "4. Revoke each account's API key at tradier.com (Settings -> API Access) -- cuts the bot off at the broker level even if anything else is missed",
+                        "5. Pause Heroku billing by scaling both dynos (web + worker) to zero or by enabling maintenance mode -- developer can run this command; brings monthly cost to $0 without losing settings",
+                        "6. Delete the Heroku app entirely -- nuclear option, dashboard becomes unreachable; database stays unless you also delete the MongoDB cluster",
                     ]},
                 ],
                 color_mode,
